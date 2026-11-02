@@ -1662,25 +1662,46 @@ local ok, err = pcall(function()
     -- Grab / Throw refeito: fisica horizontal, sem ancorar ou teleportar o carro.
     local grabbedCar, grabConn, grabState = nil, nil, nil
 
+    -- Distancia ate a CARROCERIA (nao ate o banco, que pode ficar longe).
+    -- Modelos grandes usam o ponto mais proximo da caixa 3D.
+    local function vehicleDistance(model, rootPosition)
+        local ok, boxCF, boxSize = pcall(function()
+            local cf, size = model:GetBoundingBox()
+            return cf, size
+        end)
+        if not ok or not boxCF then return math.huge end
+        local localPoint = boxCF:PointToObjectSpace(rootPosition)
+        local half = boxSize * 0.5
+        local closest = Vector3.new(
+            math.clamp(localPoint.X, -half.X, half.X),
+            math.clamp(localPoint.Y, -half.Y, half.Y),
+            math.clamp(localPoint.Z, -half.Z, half.Z)
+        )
+        return (boxCF:PointToWorldSpace(closest) - rootPosition).Magnitude
+    end
+
     local function nearestCar(maxDist)
         local char = LP.Character
         local root = char and char:FindFirstChild("HumanoidRootPart")
         if not root then return nil end
-        local range = math.max(tonumber(maxDist) or 45, 75)
+        local range = math.clamp(tonumber(maxDist) or 75, 15, 150)
         local best, bestScore = nil, math.huge
-        local target = LP:GetMouse().Target
-        -- Usa apenas a posicao do banco: GetBoundingBox de varios modelos
-        -- no mesmo frame causava engasgos ao pressionar Y.
-        for _, vehicle in ipairs(findVehicles()) do
+        local mouseTarget = LP:GetMouse().Target
+        local candidates = findVehicles()
+        -- Se o cache ainda estiver carregando, nao force um scan global sincrono.
+        for _, vehicle in ipairs(candidates) do
             local seat, model = vehicle.seat, vehicle.model
-            if seat and seat.Parent and model and model.Parent and not seat.Occupant then
+            if seat and seat.Parent and model and model.Parent
+                and (not seat.Occupant or cfg.GrabOccupiedCars) then
                 local part = seat.AssemblyRootPart or seat
                 if part and not part.Anchored then
-                    local dist = (seat.Position - root.Position).Magnitude
-                    if dist <= range + 15 then
-                        local score = dist
-                        if target and target:IsDescendantOf(model) then score = score - 1000 end
-                        if score < bestScore then best, bestScore = model, score end
+                    local dist = vehicleDistance(model, root.Position)
+                    local aimed = mouseTarget and mouseTarget:IsDescendantOf(model)
+                    if dist <= range or (aimed and (seat.Position - root.Position).Magnitude <= range + 25) then
+                        local score = dist - (aimed and 1000 or 0)
+                        if score < bestScore then
+                            best, bestScore = model, score
+                        end
                     end
                 end
             end
@@ -1704,7 +1725,7 @@ local ok, err = pcall(function()
         local model = nearestCar(cfg.GrabDistance)
         if not model then
             if not cacheReady then warn("[CQBER] Carregando lista de carros; tente Y novamente em instantes.")
-            else warn("[CQBER] Nenhum carro desocupado proximo.") end
+            else warn("[CQBER] Nenhum veiculo elegivel no alcance. Verifique ocupantes, ancora e autoridade da fisica.") end
             return
         end
         local seat = model:FindFirstChildWhichIsA("VehicleSeat", true)
@@ -1730,14 +1751,17 @@ local ok, err = pcall(function()
         align.Name = "CQBER_GrabAlign"
         align.Mode = Enum.PositionAlignmentMode.OneAttachment
         align.Attachment0 = attachment
-        align.MaxForce = math.clamp(part.AssemblyMass * 15000, 30000, 1500000)
-        align.MaxVelocity = 65
-        align.Responsiveness = math.clamp(tonumber(cfg.GrabFollowSpeed) or 16, 12, 40)
+        align.MaxForce = math.clamp(part.AssemblyMass * 45000, 100000, 10000000)
+        align.MaxVelocity = 115
+        align.Responsiveness = math.clamp(tonumber(cfg.GrabFollowSpeed) or 16, 16, 65)
         align.RigidityEnabled = false
         align.ApplyAtCenterOfMass = true
         align.Parent = part
         grabbedCar = model
         grabState = {part = part, align = align, attachment = attachment, target = target}
+        pcall(function()
+            part.AssemblyAngularVelocity = Vector3.zero
+        end)
         local stuckFor, warned = 0, false
         grabConn = RunService.Heartbeat:Connect(function(dt)
             if isUnloaded or not cfg.CarGrabActive or not model.Parent or not part.Parent then
@@ -1750,9 +1774,11 @@ local ok, err = pcall(function()
             local flat = Vector3.new(look.X, 0, look.Z)
             if flat.Magnitude < 0.01 then flat = Vector3.new(0, 0, -1) end
             -- Segura mais perto do jogador para facilitar o levantamento inicial.
-            local destination = root.Position + flat.Unit * 9 + Vector3.new(0, 4.5, 0)
+            local destination = root.Position + flat.Unit * 15 + Vector3.new(0, 9, 0)
             target.Position = destination
             align.Position = destination
+            -- Recalcula força caso o modelo/assemblagem mude durante o Grab.
+            align.MaxForce = math.clamp(part.AssemblyMass * 45000, 100000, 10000000)
             -- Assistencia apenas na simulacao que o cliente efetivamente controla.
             -- Nao tenta contornar a autoridade fisica do servidor.
             local distance = (part.Position - destination).Magnitude
@@ -1777,17 +1803,29 @@ local ok, err = pcall(function()
         if not part or not part.Parent or part.Anchored then return end
         local power = math.clamp(tonumber(cfg.ThrowPower) or 5, 0, 10)
         if power <= 0 then return end
-        -- Eixo Y positivo = para cima no Roblox. Sem componente horizontal.
+        -- Arremesso diagonal: avanca na direcao que o jogador olha e sobe,
+        -- como uma pipa. Angulo de 55 graus acima do horizonte.
+        local character = LP.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local look = (workspace.CurrentCamera and workspace.CurrentCamera.CFrame.LookVector)
+            or (root and root.CFrame.LookVector) or Vector3.new(0, 0, -1)
+        local horizontal = Vector3.new(look.X, 0, look.Z)
+        if horizontal.Magnitude < 0.01 then
+            local fallback = root and root.CFrame.LookVector or Vector3.new(0, 0, -1)
+            horizontal = Vector3.new(fallback.X, 0, fallback.Z)
+        end
+        if horizontal.Magnitude < 0.01 then horizontal = Vector3.new(0, 0, -1) end
+        local angle = math.rad(55)
+        local direction = (horizontal.Unit * math.cos(angle) + Vector3.new(0, math.sin(angle), 0)).Unit
         local speed = 95 + power * 45
-        local upward = Vector3.new(0, speed, 0)
+        local desiredVelocity = direction * speed
         local mass = part.AssemblyMass
         pcall(function()
-            -- Calcula a diferenca ANTES de alterar a velocidade.
             local before = part.AssemblyLinearVelocity
-            part:ApplyImpulse((upward - before) * mass)
-            part.AssemblyLinearVelocity = upward
+            part:ApplyImpulse((desiredVelocity - before) * mass)
+            part.AssemblyLinearVelocity = desiredVelocity
         end)
-        -- Curto reforco vertical, sem empurrar para baixo ou para frente.
+        -- Reforco curto na MESMA direcao diagonal, sem virar arremesso vertical.
         local elapsed = 0
         local boost
         boost = RunService.Heartbeat:Connect(function(dt)
@@ -1798,8 +1836,9 @@ local ok, err = pcall(function()
             end
             pcall(function()
                 local v = part.AssemblyLinearVelocity
-                if v.Y < speed then
-                    part:ApplyImpulse(Vector3.new(0, (speed - v.Y) * mass * math.clamp(dt * 12, 0, 1), 0))
+                local currentAlong = v:Dot(direction)
+                if currentAlong < speed then
+                    part:ApplyImpulse(direction * ((speed - currentAlong) * mass * math.clamp(dt * 12, 0, 1)))
                 end
             end)
         end)
