@@ -23,7 +23,7 @@ local ok, err = pcall(function()
         ESP_Tracer = false, ESP_Skeleton = false, ESP_Head = false, ESP_Vehicles = false, TeamCheckAimbot = false,
         TeamCheckESP = false, WallCheckAimbot = false, WallCheckESP = false, TargetPlayer = nil,
         TargetOnESP = false, FOV = 120, Smooth = 0.25, ThrowPower = 5, GrabDistance = 75,
-        GrabFollowSpeed = 16, MenuBind = Enum.KeyCode.Insert, GrabBind = Enum.KeyCode.Y,
+        GrabFollowSpeed = 16, GrabStrength = 7, SpeedHack = false, SpeedValue = 32, SpinSpeed = 15, MenuBind = Enum.KeyCode.Insert, GrabBind = Enum.KeyCode.Y,
         ThrowBind = Enum.UserInputType.MouseButton1, Crosshair_On = false, Crosshair_Thickness = 2,
         Crosshair_Length = 10, Crosshair_Gap = 5, Crosshair_Color = Color3.fromRGB(240, 240, 240),
         Crosshair_Hex = "#00FF88", Crosshair_Outline = true, Crosshair_Dot = false,
@@ -1024,6 +1024,7 @@ local ok, err = pcall(function()
     
     makeToggle(carFisicaPage, "Ativar Grab / Throw", "CarGrabActive")
     makeSlider(carFisicaPage, "Força do Arremesso", "ThrowPower", 0, 10, 5, true)
+    makeSlider(carFisicaPage, "Força do Grab", "GrabStrength", 1, 10, 7, true)
     makeSlider(carFisicaPage, "Alcance para Pegar Carro", "GrabDistance", 45, 150, 75, true)
     makeToggle(carFisicaPage, "Car Fly (WASD)", "CarFly", function(s) toggleCarFly(s) end)
     
@@ -1163,6 +1164,41 @@ local ok, err = pcall(function()
     makeButton(funChatPage, "Dar /e wave", function() sendChat("/e wave") end)
     makeButton(funChatPage, "Dar /e laugh", function() sendChat("/e laugh") end)
     
+    -- Speedhack: restaura a velocidade anterior ao desativar.
+    local savedWalkSpeeds = setmetatable({}, {__mode = "k"})
+    local speedConnection
+    local function updateSpeed()
+        local character = LP.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return end
+        if cfg.SpeedHack then
+            if savedWalkSpeeds[humanoid] == nil then
+                savedWalkSpeeds[humanoid] = humanoid.WalkSpeed
+            end
+            humanoid.WalkSpeed = math.clamp(tonumber(cfg.SpeedValue) or 32, 16, 150)
+        elseif savedWalkSpeeds[humanoid] ~= nil then
+            humanoid.WalkSpeed = savedWalkSpeeds[humanoid]
+            savedWalkSpeeds[humanoid] = nil
+        end
+    end
+    makeToggle(funChatPage, "Speedhack", "SpeedHack", function()
+        updateSpeed()
+    end)
+    makeSlider(funChatPage, "Velocidade", "SpeedValue", 16, 150, 32, true)
+    makeSlider(funChatPage, "Velocidade do Spin", "SpinSpeed", 1, 90, 15, true)
+    safeConnect(LP.CharacterAdded, function(character)
+        task.defer(function()
+            local humanoid = character:WaitForChild("Humanoid", 8)
+            if humanoid and not isUnloaded then updateSpeed() end
+        end)
+    end)
+    -- Atualiza o WalkSpeed quando o slider mudar e recupera mudancas do jogo.
+    speedConnection = RunService.Heartbeat:Connect(function()
+        if isUnloaded then return end
+        if cfg.SpeedHack then updateSpeed() end
+    end)
+    table.insert(allConnections, speedConnection)
+
     local spinToggle = Instance.new("TextButton")
     spinToggle.Size = UDim2.new(1, -10, 0, 26)
     spinToggle.BackgroundColor3 = THEME.off
@@ -1182,7 +1218,7 @@ local ok, err = pcall(function()
             spinConn = RunService.Heartbeat:Connect(function()
                 local char = LP.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if hrp then hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(15), 0) end
+                if hrp then hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(math.clamp(tonumber(cfg.SpinSpeed) or 15, 1, 90)), 0) end
             end)
         else
             spinToggle.Text = "SPIN (Girar)"
@@ -1279,6 +1315,8 @@ local ok, err = pcall(function()
     
     -- [ ABA CONFIGURAÇÕES ]
     local function unloadScript()
+        cfg.SpeedHack = false
+        updateSpeed()
         isUnloaded = true
         for _, conn in ipairs(allConnections) do pcall(function() conn:Disconnect() end) end
         if sg then sg:Destroy() end
@@ -1680,33 +1718,38 @@ local ok, err = pcall(function()
         return (boxCF:PointToWorldSpace(closest) - rootPosition).Magnitude
     end
 
+    -- Pega pelo ponto da carroceria mais proximo, independente do angulo da camera.
     local function nearestCar(maxDist)
         local char = LP.Character
         local root = char and char:FindFirstChild("HumanoidRootPart")
         if not root then return nil end
-        local range = math.clamp(tonumber(maxDist) or 75, 15, 150)
-        local best, bestScore = nil, math.huge
+        local range = math.clamp((tonumber(maxDist) or 75) + 15, 15, 165)
         local mouseTarget = LP:GetMouse().Target
-        local candidates = findVehicles()
-        -- Se o cache ainda estiver carregando, nao force um scan global sincrono.
-        for _, vehicle in ipairs(candidates) do
+        local best, bestScore = nil, math.huge
+        for _, vehicle in ipairs(findVehicles()) do
             local seat, model = vehicle.seat, vehicle.model
             if seat and seat.Parent and model and model.Parent
                 and (not seat.Occupant or cfg.GrabOccupiedCars) then
                 local part = seat.AssemblyRootPart or seat
                 if part and not part.Anchored then
-                    local dist = vehicleDistance(model, root.Position)
+                    local distance = vehicleDistance(model, root.Position)
                     local aimed = mouseTarget and mouseTarget:IsDescendantOf(model)
-                    if dist <= range or (aimed and (seat.Position - root.Position).Magnitude <= range + 25) then
-                        local score = dist - (aimed and 1000 or 0)
+                    if distance <= range or (aimed and (seat.Position - root.Position).Magnitude <= range + 25) then
+                        local score = distance - (aimed and 200 or 0)
                         if score < bestScore then
-                            best, bestScore = model, score
+                            bestScore, best = score, model
                         end
                     end
                 end
             end
         end
         return best
+    end
+
+    local function grabForce(part)
+        local strength = math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10)
+        local mass = math.max(part.AssemblyMass, 1)
+        return math.clamp(mass * (12000 + strength * 13000), 100000, 50000000)
     end
 
     stopGrab = function()
@@ -1751,9 +1794,9 @@ local ok, err = pcall(function()
         align.Name = "CQBER_GrabAlign"
         align.Mode = Enum.PositionAlignmentMode.OneAttachment
         align.Attachment0 = attachment
-        align.MaxForce = math.clamp(part.AssemblyMass * 45000, 100000, 10000000)
-        align.MaxVelocity = 115
-        align.Responsiveness = math.clamp(tonumber(cfg.GrabFollowSpeed) or 16, 16, 65)
+        align.MaxForce = grabForce(part)
+        align.MaxVelocity = 85 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 12
+        align.Responsiveness = 20 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 7
         align.RigidityEnabled = false
         align.ApplyAtCenterOfMass = true
         align.Parent = part
@@ -1767,6 +1810,15 @@ local ok, err = pcall(function()
             if isUnloaded or not cfg.CarGrabActive or not model.Parent or not part.Parent then
                 stopGrab(); return
             end
+            -- Se a montagem mudar (ex.: ocupante/suspensao), reposiciona o attachment
+            -- na raiz atual sem soltar o Grab.
+            local newRoot = part.AssemblyRootPart
+            if newRoot and newRoot ~= part and not newRoot.Anchored then
+                part = newRoot
+                attachment.Parent = part
+                align.Parent = part
+                grabState.part = part
+            end
             local character = LP.Character
             local root = character and character:FindFirstChild("HumanoidRootPart")
             if not root then stopGrab(); return end
@@ -1774,11 +1826,13 @@ local ok, err = pcall(function()
             local flat = Vector3.new(look.X, 0, look.Z)
             if flat.Magnitude < 0.01 then flat = Vector3.new(0, 0, -1) end
             -- Segura mais perto do jogador para facilitar o levantamento inicial.
-            local destination = root.Position + flat.Unit * 15 + Vector3.new(0, 9, 0)
+            local destination = root.Position + flat.Unit * 12 + Vector3.new(0, 7, 0)
             target.Position = destination
             align.Position = destination
             -- Recalcula força caso o modelo/assemblagem mude durante o Grab.
-            align.MaxForce = math.clamp(part.AssemblyMass * 45000, 100000, 10000000)
+            align.MaxForce = grabForce(part)
+            align.MaxVelocity = 85 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 12
+            align.Responsiveness = 20 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 7
             -- Assistencia apenas na simulacao que o cliente efetivamente controla.
             -- Nao tenta contornar a autoridade fisica do servidor.
             local distance = (part.Position - destination).Magnitude
