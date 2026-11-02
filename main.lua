@@ -802,12 +802,16 @@ local ok, err = pcall(function()
         section.BackgroundTransparency = 0.08
         section.BorderSizePixel = 0
         section.ClipsDescendants = true
-        local rounded = section:FindFirstChildOfClass("UICorner")
-        if not rounded then
-            rounded = Instance.new("UICorner")
-            rounded.Parent = section
-        end
-        rounded.CornerRadius = UDim.new(0, 10)
+        -- Protege a inicializacao caso o executor/cliente rejeite
+        -- UICorner diretamente neste tipo de ScrollingFrame.
+        pcall(function()
+            local rounded = section:FindFirstChildOfClass("UICorner")
+            if not rounded then
+                rounded = Instance.new("UICorner")
+                rounded.Parent = section
+            end
+            rounded.CornerRadius = UDim.new(0, 10)
+        end)
         local outline = section:FindFirstChild("CQBER_EmbedOutline")
         if not outline then
             outline = Instance.new("UIStroke")
