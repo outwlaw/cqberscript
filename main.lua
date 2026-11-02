@@ -28,7 +28,6 @@ local ok, err = pcall(function()
         ThrowBind = Enum.UserInputType.MouseButton1, Crosshair_On = false, Crosshair_Thickness = 2,
         Crosshair_Length = 10, Crosshair_Gap = 5, Crosshair_Color = Color3.fromRGB(240, 240, 240),
         Crosshair_Hex = "#00FF88", Crosshair_Outline = true, Crosshair_Dot = false,
-        PetalCount = 24,
     }
     
     -- Perfis: apenas valores simples da configuracao; nunca executa codigo importado.
@@ -175,82 +174,11 @@ local ok, err = pcall(function()
     wallpaper.Size = UDim2.fromScale(1, 1)
     wallpaper.BackgroundTransparency = 1
     wallpaper.Image = "rbxassetid://8997180365"
-    wallpaper.ImageTransparency = 0.88
+    wallpaper.ImageTransparency = 0.96
     wallpaper.ScaleType = Enum.ScaleType.Crop
     wallpaper.ZIndex = 0
     wallpaper.Parent = win
     Instance.new("UICorner", wallpaper).CornerRadius = UDim.new(0, 8)
-
-    -- Petalas animadas, exclusivamente decorativas, atras dos botoes.
-    -- Cada petala e uma forma de UI local; nao depende de imagem externa.
-    local petalLayer = Instance.new("Frame")
-    petalLayer.Name = "SakuraPetals"
-    petalLayer.Size = UDim2.fromScale(1, 1)
-    petalLayer.BackgroundTransparency = 1
-    petalLayer.ClipsDescendants = true
-    petalLayer.ZIndex = 1
-    petalLayer.Parent = win
-    local petalRandom = Random.new()
-    -- Petalas em cobre, champagne e branco, combinando com Ember Blossom.
-    local petalColors = {
-        Color3.fromRGB(255, 151, 55),
-        Color3.fromRGB(255, 194, 129),
-        Color3.fromRGB(255, 229, 191),
-        Color3.fromRGB(247, 244, 240),
-    }
-    local petals = {}
-    local function createPetal()
-        local petal = Instance.new("Frame")
-        local size = petalRandom:NextInteger(5, 12)
-        petal.Size = UDim2.fromOffset(size, math.floor(size * 1.5))
-        petal.BackgroundColor3 = petalColors[petalRandom:NextInteger(1, #petalColors)]
-        petal.BackgroundTransparency = petalRandom:NextNumber(0.24, 0.60)
-        petal.BorderSizePixel = 0
-        petal.Rotation = petalRandom:NextInteger(-70, 70)
-        petal.ZIndex = 1
-        petal.Parent = petalLayer
-        Instance.new("UICorner", petal).CornerRadius = UDim.new(1, 0)
-        petals[#petals + 1] = {
-            gui = petal,
-            x = petalRandom:NextNumber(0, 1),
-            y = petalRandom:NextNumber(-1, 1),
-            speed = petalRandom:NextNumber(0.025, 0.085),
-            sway = petalRandom:NextNumber(0.012, 0.045),
-            phase = petalRandom:NextNumber(0, 6.28),
-            rotation = petalRandom:NextNumber(-32, 32),
-        }
-    end
-    local function updatePetalCount()
-        local desired = math.clamp(math.floor(tonumber(cfg.PetalCount) or 24), 0, 100)
-        while #petals < desired do createPetal() end
-        while #petals > desired do
-            local item = table.remove(petals)
-            if item and item.gui then item.gui:Destroy() end
-        end
-    end
-    updatePetalCount()
-    profileRefresh.PetalCount = updatePetalCount
-    local petalClock = 0
-    safeConnect(RunService.RenderStepped, function(dt)
-        if isUnloaded or not win.Visible then return end
-        if #petals ~= math.clamp(math.floor(tonumber(cfg.PetalCount) or 24), 0, 100) then
-            updatePetalCount()
-        end
-        dt = math.min(dt, 0.06)
-        petalClock = petalClock + dt
-        for _, item in ipairs(petals) do
-            item.y = item.y + item.speed * dt
-            if item.y > 1.08 then
-                item.y = -0.08
-                item.x = petalRandom:NextNumber(0, 1)
-            end
-            item.gui.Position = UDim2.fromScale(
-                math.clamp(item.x + math.sin(petalClock * 0.9 + item.phase) * item.sway, 0, 1),
-                item.y
-            )
-            item.gui.Rotation = item.rotation + math.sin(petalClock + item.phase) * 28
-        end
-    end)
 
     local winStroke = Instance.new("UIStroke")
     winStroke.Color = THEME.accent
@@ -468,8 +396,8 @@ local ok, err = pcall(function()
     statusLabel.Parent = profileFrame
     
     content = Instance.new("Frame")
-    content.Size = UDim2.new(1, -156, 1, -77)
-    content.Position = UDim2.new(0, 150, 0, 42)
+    content.Size = UDim2.new(1, -166, 1, -77)
+    content.Position = UDim2.new(0, 160, 0, 42)
     content.BackgroundColor3 = THEME.bg
     content.BackgroundTransparency = 0.28
     content.BorderSizePixel = 0
@@ -793,6 +721,8 @@ local ok, err = pcall(function()
     if vehicleRootLayout then vehicleRootLayout:Destroy() end
     vehiclesPage.CanvasSize = UDim2.fromScale(0, 0)
     vehiclesPage.ScrollingEnabled = false
+    vehiclesPage.Position = vehiclesPage.Position + UDim2.fromOffset(8, 0)
+    vehiclesPage.Size = vehiclesPage.Size - UDim2.fromOffset(16, 0)
 
     local function vehicleSection(name, pos, size)
         local section = Instance.new("ScrollingFrame")
@@ -857,7 +787,7 @@ local ok, err = pcall(function()
         heading.LayoutOrder = -100
         heading.Size = UDim2.new(1, -10, 0, 42)
         heading.BackgroundTransparency = 1
-        heading.Text = "LAA  /  " .. item[2]
+        heading.Text = "✦  " .. item[2]
         heading.Font = Enum.Font.GothamBold
         heading.TextSize = 17
         heading.TextColor3 = THEME.accent
@@ -865,18 +795,29 @@ local ok, err = pcall(function()
         heading.Parent = item[1]
     end
     
-    -- Um unico embed/borda por secao; controles internos sem caixas separadas.
+    -- Moldura limitada ao ScrollingFrame: nao cria paineis soltos fora da janela.
     for _, item in ipairs(headings) do
         local section = item[1]
-        if section ~= vehiclesPage then
-            section.BackgroundColor3 = THEME.bg
-            section.BackgroundTransparency = 0.08
-            local outline = Instance.new("UIStroke")
-            outline.Name = "LAA_SectionOutline"
-            outline.Color = THEME.off
-            outline.Thickness = 1
+        section.BackgroundColor3 = Color3.fromRGB(35, 33, 33)
+        section.BackgroundTransparency = 0.08
+        section.BorderSizePixel = 0
+        section.ClipsDescendants = true
+        local rounded = section:FindFirstChildOfClass("UICorner")
+        if not rounded then
+            rounded = Instance.new("UICorner")
+            rounded.Parent = section
+        end
+        rounded.CornerRadius = UDim.new(0, 10)
+        local outline = section:FindFirstChild("CQBER_EmbedOutline")
+        if not outline then
+            outline = Instance.new("UIStroke")
+            outline.Name = "CQBER_EmbedOutline"
             outline.Parent = section
         end
+        outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        outline.Color = THEME.accent
+        outline.Transparency = 0.25
+        outline.Thickness = 1
     end
 
     local function makeToggle(parent, label, key, cb)
@@ -1579,8 +1520,6 @@ local ok, err = pcall(function()
     Players.PlayerAdded:Connect(function() task.wait(0.5); refreshTpList() end)
     Players.PlayerRemoving:Connect(function() task.wait(0.5); refreshTpList() end)
     
-    -- Controle visual: zero remove todas as petalas; 100 multiplica o efeito.
-    makeSlider(keybindsPage, "Quantidade de Petalas", "PetalCount", 0, 100, 24, true)
 
     -- [ ABA CONFIGURAÇÕES ]
     local function unloadScript()
@@ -2020,32 +1959,49 @@ local ok, err = pcall(function()
         return (boxCF:PointToWorldSpace(closest) - rootPosition).Magnitude
     end
 
-    -- Pega pelo ponto da carroceria mais proximo, independente do angulo da camera.
+    -- Prioriza o carro realmente apontado. Sem alvo, usa apenas carro
+    -- proximo e a frente, evitando pegar outro veiculo por engano.
     local function nearestCar(maxDist)
         local char = LP.Character
         local root = char and char:FindFirstChild("HumanoidRootPart")
         if not root then return nil end
-        local range = math.clamp((tonumber(maxDist) or 75) + 15, 15, 165)
+        local range = math.clamp(tonumber(maxDist) or 75, 15, 150)
         local mouseTarget = LP:GetMouse().Target
-        local best, bestScore = nil, math.huge
-        for _, vehicle in ipairs(findVehicles()) do
+        local vehicles = findVehicles()
+        -- Mira em qualquer peca da carroceria, nao apenas no banco.
+        if mouseTarget then
+            local chosen, chosenDistance = nil, math.huge
+            for _, vehicle in ipairs(vehicles) do
+                local seat, model = vehicle.seat, vehicle.model
+                if seat and seat.Parent and model and model.Parent
+                    and (not seat.Occupant or cfg.GrabOccupiedCars)
+                    and mouseTarget:IsDescendantOf(model) then
+                    local part = seat.AssemblyRootPart or seat
+                    local dist = (seat.Position - root.Position).Magnitude
+                    if part and not part.Anchored and dist <= range + 15 and dist < chosenDistance then
+                        chosen, chosenDistance = model, dist
+                    end
+                end
+            end
+            if chosen then return chosen end
+        end
+        -- Sem mira valida: somente o veiculo mais perto, a ate 25 studs,
+        -- dentro de um cone na frente do personagem.
+        local best, bestDistance = nil, math.huge
+        local forward = root.CFrame.LookVector
+        for _, vehicle in ipairs(vehicles) do
             local seat, model = vehicle.seat, vehicle.model
             if seat and seat.Parent and model and model.Parent
                 and (not seat.Occupant or cfg.GrabOccupiedCars) then
                 local part = seat.AssemblyRootPart or seat
                 if part and not part.Anchored then
-                    -- Pre-filtro barato: evita calcular bounding box em veiculos distantes.
-                    local seatDistance = (seat.Position - root.Position).Magnitude
-                    if seatDistance <= range + 90 then
-                    local distance = vehicleDistance(model, root.Position)
-                    local aimed = mouseTarget and mouseTarget:IsDescendantOf(model)
-                    if distance <= range or (aimed and (seat.Position - root.Position).Magnitude <= range + 25) then
-                        local score = distance - (aimed and 200 or 0)
-                        if score < bestScore then
-                            bestScore, best = score, model
-                        end
+                    local delta = seat.Position - root.Position
+                    local horizontal = Vector3.new(delta.X, 0, delta.Z)
+                    local dist = horizontal.Magnitude
+                    if dist <= math.min(range, 25) and dist < bestDistance
+                        and (dist < 5 or forward:Dot(horizontal.Unit) >= 0.35) then
+                        best, bestDistance = model, dist
                     end
-                    end -- pre-filtro por distancia
                 end
             end
         end
@@ -2084,6 +2040,16 @@ local ok, err = pcall(function()
             warn("[cqber] Veiculo ancorado ou sem montagem fisica livre")
             return
         end
+        -- Remove qualquer impulso de arremesso anterior que ainda esteja ativo.
+        -- Um BodyVelocity antigo pode continuar empurrando o carro para cima ao apertar Y.
+        for _, obj in ipairs(part:GetChildren()) do
+            if obj.Name == "CQBER_ThrowBoost" then obj:Destroy() end
+        end
+        pcall(function()
+            local v = part.AssemblyLinearVelocity
+            part.AssemblyLinearVelocity = Vector3.new(v.X * 0.25, math.min(v.Y, 0), v.Z * 0.25)
+            part.AssemblyAngularVelocity = Vector3.zero
+        end)
         -- Alvo invisivel local; AlignPosition evita ancorar o veiculo.
         local target = Instance.new("Part")
         target.Name = "CQBER_GrabTarget"
@@ -2096,7 +2062,8 @@ local ok, err = pcall(function()
         target.Parent = workspace
         local attachment = Instance.new("Attachment")
         attachment.Name = "CQBER_GrabAttachment"
-        attachment.Position = Vector3.zero
+        local initialBoxCF, initialSize = model:GetBoundingBox()
+        attachment.Position = part.CFrame:PointToObjectSpace(initialBoxCF.Position)
         attachment.Parent = part
         local align = Instance.new("AlignPosition")
         align.Name = "CQBER_GrabAlign"
@@ -2124,26 +2091,23 @@ local ok, err = pcall(function()
         orientation.CFrame = levelRotation
         orientation.Parent = part
         -- Altura fixa e moderada, medida pelo centro real da carroceria.
-        local boxCF, initialSize = model:GetBoundingBox()
-        local holdHeight = math.clamp(3.1 + initialSize.Y * 0.5, 4.2, 7.5)
+        local holdHeight = math.clamp(2.7 + initialSize.Y * 0.5, 3.7, 5.8)
         -- O AlignPosition controla a raiz da montagem, NAO o centro da caixa.
         -- Preservar o deslocamento evita o carro mergulhar ou subir sem parar.
-        local centerToRoot = part.Position - boxCF.Position
+        -- O attachment fica no centro da carroceria: nao somar offset da raiz.
         local character = LP.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
         if not root then target:Destroy(); align:Destroy(); orientation:Destroy(); attachment:Destroy(); return end
         local centerDestination = root.Position + Vector3.new(0, holdHeight, 0)
-        -- Teleporte unico da montagem inteira, mantendo as pecas e colisoes.
-        -- Se o servidor for dono da fisica, ele pode reverter esse movimento.
-        pcall(function()
-            local delta = centerDestination - boxCF.Position
-            model:PivotTo(CFrame.new(delta) * model:GetPivot())
-            part.AssemblyLinearVelocity = Vector3.zero
-            part.AssemblyAngularVelocity = Vector3.zero
-        end)
-        local destination = centerDestination + centerToRoot
-        align.Position = destination
-        target.Position = destination
+        -- Nao usa PivotTo: teleporte local pode separar o visual da hitbox
+        -- quando a simulacao do veiculo pertence ao servidor.
+        -- O AlignPosition move a montagem fisica de verdade em ~0.3 s.
+        local destination = centerDestination
+        local startPosition = initialBoxCF.Position
+        align.Position = startPosition
+        target.Position = startPosition
+        align.MaxVelocity = 24
+        align.Responsiveness = 12
         grabbedCar = model
         grabState = {part = part, align = align, orientation = orientation, attachment = attachment, target = target}
         pcall(function()
@@ -2151,6 +2115,7 @@ local ok, err = pcall(function()
         end)
         local stuckFor, warned = 0, false
         local physicsRefresh = 0
+        local grabAge = 0
         grabConn = RunService.Heartbeat:Connect(function(dt)
             if isUnloaded or not cfg.CarGrabActive or not model.Parent or not part.Parent then
                 stopGrab(); return
@@ -2158,11 +2123,11 @@ local ok, err = pcall(function()
             -- Se a montagem mudar (ex.: ocupante/suspensao), reposiciona o attachment
             -- na raiz atual sem soltar o Grab.
             local newRoot = part.AssemblyRootPart
-            if newRoot and newRoot ~= part and not newRoot.Anchored then
+            if newRoot and newRoot ~= part and not newRoot.Anchored and newRoot:IsDescendantOf(model) then
                 part = newRoot
                 local currentBox = model:GetBoundingBox()
-                centerToRoot = part.Position - currentBox.Position
                 attachment.Parent = part
+                attachment.Position = part.CFrame:PointToObjectSpace(currentBox.Position)
                 align.Parent = part
                 orientation.Parent = part
                 grabState.part = part
@@ -2174,11 +2139,16 @@ local ok, err = pcall(function()
             local flat = Vector3.new(look.X, 0, look.Z)
             if flat.Magnitude < 0.01 then flat = Vector3.new(0, 0, -1) end
             -- Mantem o centro da carroceria a altura constante, sem acumular subida.
-            local destination = root.Position + Vector3.new(0, holdHeight, 0) + centerToRoot
+            local destination = root.Position + Vector3.new(0, holdHeight, 0)
             local move = root.AssemblyLinearVelocity
             destination = destination + Vector3.new(move.X, 0, move.Z) * 0.08
-            target.Position = destination
-            align.Position = destination
+            grabAge = grabAge + dt
+            -- Animacao curta: alvo sai da posicao atual e chega acima da cabeca.
+            local alpha = math.clamp(grabAge / 0.30, 0, 1)
+            alpha = 1 - (1 - alpha) ^ 3
+            local animatedTarget = startPosition:Lerp(destination, alpha)
+            target.Position = animatedTarget
+            align.Position = animatedTarget
             -- AlignPosition cuida da altura; nao injeta velocidade vertical a cada frame.
             -- Recalcula força caso o modelo/assemblagem mude durante o Grab.
             physicsRefresh = physicsRefresh + dt
@@ -2187,12 +2157,17 @@ local ok, err = pcall(function()
                 align.MaxForce = grabForce(part)
                 orientation.MaxTorque = math.clamp(part.AssemblyMass * 45000, 100000, 50000000)
             end
-            align.MaxVelocity = 34
-            align.Responsiveness = 13
+            -- Velocidade limitada: evita que a correcao de posicao vire um lancamento.
+            align.MaxVelocity = grabAge < 0.45 and 24 or 16
+            align.Responsiveness = grabAge < 0.45 and 12 or 9
             orientation.CFrame = levelRotation
-            -- Y segura sem acumular giro nem velocidade vertical exagerada.
+            -- Amortece subidas excessivas sem forcar teleporte nem alterar hitbox.
             pcall(function()
                 part.AssemblyAngularVelocity = Vector3.zero
+                local v = part.AssemblyLinearVelocity
+                if v.Y > 14 then
+                    part.AssemblyLinearVelocity = Vector3.new(v.X, 14, v.Z)
+                end
             end)
             -- Assistencia apenas na simulacao que o cliente efetivamente controla.
             -- Nao tenta contornar a autoridade fisica do servidor.
@@ -2213,47 +2188,24 @@ local ok, err = pcall(function()
     local function throwCar()
         if not grabbedCar or not grabState or isUnloaded then return end
         local part = grabState.part
-        -- Remove a forca de segurar ANTES de arremessar.
         stopGrab()
         if not part or not part.Parent or part.Anchored then return end
         local power = math.clamp(tonumber(cfg.ThrowPower) or 5, 0, 10)
         if power <= 0 then return end
-        -- Arremesso diagonal fixo para o ceu: 35 graus acima do horizonte.
-        -- Usa apenas a direcao horizontal do personagem, sem depender
-        -- da inclinacao da camera (que podia mandar o carro reto para cima).
-        local character = LP.Character
-        local root = character and character:FindFirstChild("HumanoidRootPart")
+        -- Arremesso do RXOUL enviado: impulso na direcao da camera
+        -- somado a um impulso vertical, com BodyVelocity por 1 segundo.
         local camera = workspace.CurrentCamera
-        local look = (root and root.CFrame.LookVector)
-            or (camera and camera.CFrame.LookVector)
-            or Vector3.new(0, 0, -1)
-        local flat = Vector3.new(look.X, 0, look.Z)
-        if flat.Magnitude < 0.01 then flat = Vector3.new(0, 0, -1) end
-        local angle = math.rad(35)
-        local direction = (flat.Unit * math.cos(angle) + Vector3.yAxis * math.sin(angle)).Unit
-
-        -- A barra de potencia continua controlando a velocidade do arremesso.
-        local speed = 35 + 17 * power + 8 * power * power
-        local desiredVelocity = direction * speed
+        local look = camera and camera.CFrame.LookVector or Vector3.new(0, 0, -1)
+        local throwVel = look * (power * 150) + Vector3.new(0, power * 100, 0)
         pcall(function()
             part.AssemblyAngularVelocity = Vector3.zero
-            part.AssemblyLinearVelocity = desiredVelocity
-        end)
-        -- Reforco breve na mesma diagonal fixa, sem seguir a camera.
-        local elapsed = 0
-        local boost
-        boost = RunService.Heartbeat:Connect(function(dt)
-            elapsed = elapsed + dt
-            if elapsed > 0.35 or not part.Parent or part.Anchored or isUnloaded then
-                boost:Disconnect()
-                return
-            end
-            pcall(function()
-                local velocity = part.AssemblyLinearVelocity
-                local along = velocity:Dot(direction)
-                part.AssemblyLinearVelocity = velocity
-                    + direction * math.max(0, speed - along) * math.clamp(dt * 14, 0, 1)
-            end)
+            part.AssemblyLinearVelocity = throwVel
+            local bv = Instance.new("BodyVelocity")
+            bv.Name = "CQBER_ThrowBoost"
+            bv.MaxForce = Vector3.new(1e8, 1e8, 1e8)
+            bv.Velocity = throwVel
+            bv.Parent = part
+            game:GetService("Debris"):AddItem(bv, 1)
         end)
     end
 
