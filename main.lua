@@ -1775,40 +1775,31 @@ local ok, err = pcall(function()
         -- Remove a forca de segurar ANTES de arremessar.
         stopGrab()
         if not part or not part.Parent or part.Anchored then return end
-        local cam = workspace.CurrentCamera
-        local look = cam and cam.CFrame.LookVector or Vector3.new(0, 0, -1)
-        local horizontal = Vector3.new(look.X, 0, look.Z)
-        if horizontal.Magnitude < 0.01 then
-            local char = LP.Character
-            local root = char and char:FindFirstChild("HumanoidRootPart")
-            local facing = root and root.CFrame.LookVector or Vector3.new(0, 0, -1)
-            horizontal = Vector3.new(facing.X, 0, facing.Z)
-        end
-        horizontal = horizontal.Unit
         local power = math.clamp(tonumber(cfg.ThrowPower) or 5, 0, 10)
         if power <= 0 then return end
-        local speed = 80 + power * 45
-        -- Mantem a velocidade vertical em zero: arremesso reto, nao para cima.
-        local desired = horizontal * speed
+        -- Eixo Y positivo = para cima no Roblox. Sem componente horizontal.
+        local speed = 95 + power * 45
+        local upward = Vector3.new(0, speed, 0)
         local mass = part.AssemblyMass
         pcall(function()
-            part.AssemblyLinearVelocity = desired
-            part:ApplyImpulse((desired - part.AssemblyLinearVelocity) * mass)
+            -- Calcula a diferenca ANTES de alterar a velocidade.
+            local before = part.AssemblyLinearVelocity
+            part:ApplyImpulse((upward - before) * mass)
+            part.AssemblyLinearVelocity = upward
         end)
-        -- Reforca o impulso por alguns frames contra perdas de velocidade locais.
+        -- Curto reforco vertical, sem empurrar para baixo ou para frente.
         local elapsed = 0
         local boost
         boost = RunService.Heartbeat:Connect(function(dt)
             elapsed = elapsed + dt
-            if elapsed > 0.35 or not part.Parent or part.Anchored then
-                boost:Disconnect(); return
+            if elapsed > 0.28 or not part.Parent or part.Anchored then
+                boost:Disconnect()
+                return
             end
             pcall(function()
                 local v = part.AssemblyLinearVelocity
-                local flat = Vector3.new(v.X, 0, v.Z)
-                local missing = desired - flat
-                if missing.Magnitude > 3 then
-                    part:ApplyImpulse(missing * mass * math.clamp(dt * 9, 0, 1))
+                if v.Y < speed then
+                    part:ApplyImpulse(Vector3.new(0, (speed - v.Y) * mass * math.clamp(dt * 12, 0, 1), 0))
                 end
             end)
         end)
