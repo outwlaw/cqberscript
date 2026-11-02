@@ -1803,43 +1803,45 @@ local ok, err = pcall(function()
         if not part or not part.Parent or part.Anchored then return end
         local power = math.clamp(tonumber(cfg.ThrowPower) or 5, 0, 10)
         if power <= 0 then return end
-        -- Arremesso diagonal: avanca na direcao que o jogador olha e sobe,
-        -- como uma pipa. Angulo de 55 graus acima do horizonte.
+        -- Arremesso diagonal com predominancia HORIZONTAL.
+        -- Usa a direcao horizontal do personagem para nao depender da camera
+        -- apontando para o ceu. 30 graus acima do horizonte.
         local character = LP.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
-        local look = (workspace.CurrentCamera and workspace.CurrentCamera.CFrame.LookVector)
-            or (root and root.CFrame.LookVector) or Vector3.new(0, 0, -1)
+        local look = root and root.CFrame.LookVector
+            or (workspace.CurrentCamera and workspace.CurrentCamera.CFrame.LookVector)
+            or Vector3.new(0, 0, -1)
         local horizontal = Vector3.new(look.X, 0, look.Z)
-        if horizontal.Magnitude < 0.01 then
-            local fallback = root and root.CFrame.LookVector or Vector3.new(0, 0, -1)
-            horizontal = Vector3.new(fallback.X, 0, fallback.Z)
-        end
         if horizontal.Magnitude < 0.01 then horizontal = Vector3.new(0, 0, -1) end
-        local angle = math.rad(55)
-        local direction = (horizontal.Unit * math.cos(angle) + Vector3.new(0, math.sin(angle), 0)).Unit
+        horizontal = horizontal.Unit
+
         local speed = 95 + power * 45
-        local desiredVelocity = direction * speed
+        local horizontalSpeed = speed * math.cos(math.rad(30))
+        local verticalSpeed = speed * math.sin(math.rad(30))
+        local desiredVelocity = horizontal * horizontalSpeed + Vector3.new(0, verticalSpeed, 0)
         local mass = part.AssemblyMass
         pcall(function()
-            local before = part.AssemblyLinearVelocity
-            part:ApplyImpulse((desiredVelocity - before) * mass)
+            -- Substitui a velocidade vertical anterior, que podia estar muito alta
+            -- por causa do Grab, em vez de somar mais impulso para cima.
             part.AssemblyLinearVelocity = desiredVelocity
         end)
-        -- Reforco curto na MESMA direcao diagonal, sem virar arremesso vertical.
+        -- Reforco curto: prioriza o deslocamento para frente e limita a subida.
         local elapsed = 0
         local boost
         boost = RunService.Heartbeat:Connect(function(dt)
             elapsed = elapsed + dt
-            if elapsed > 0.28 or not part.Parent or part.Anchored then
+            if elapsed > 0.35 or not part.Parent or part.Anchored then
                 boost:Disconnect()
                 return
             end
             pcall(function()
                 local v = part.AssemblyLinearVelocity
-                local currentAlong = v:Dot(direction)
-                if currentAlong < speed then
-                    part:ApplyImpulse(direction * ((speed - currentAlong) * mass * math.clamp(dt * 12, 0, 1)))
-                end
+                local along = Vector3.new(v.X, 0, v.Z):Dot(horizontal)
+                local newHorizontal = Vector3.new(v.X, 0, v.Z)
+                    + horizontal * math.max(0, horizontalSpeed - along) * math.clamp(dt * 14, 0, 1)
+                -- Nao permite que a velocidade de subida supere a diagonal.
+                part.AssemblyLinearVelocity = newHorizontal
+                    + Vector3.new(0, math.min(v.Y, verticalSpeed), 0)
             end)
         end)
     end
