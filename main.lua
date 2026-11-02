@@ -9,24 +9,26 @@ local ok, err = pcall(function()
     local Cam = workspace.CurrentCamera
     
     -- Banner geometrico preto e branco, sem asset externo 
-    local BANNER_IMAGE = "rbxassetid://13836896689"
+    local BANNER_IMAGE = "rbxassetid://8997180365"
+    -- CQBER EMBER BLOSSOM: estilo FiveM, preto fosco, cobre e branco, com sakura.
     local THEME = {
-        bg = Color3.fromRGB(15, 15, 20), sidebar = Color3.fromRGB(20, 20, 28),
-        panel = Color3.fromRGB(25, 25, 35), text = Color3.fromRGB(240, 240, 240),
-        textDim = Color3.fromRGB(130, 130, 140), accent = Color3.fromRGB(0, 190, 255),
-        red = Color3.fromRGB(255, 60, 60), off = Color3.fromRGB(45, 45, 55),
+        bg = Color3.fromRGB(11, 11, 13), sidebar = Color3.fromRGB(19, 18, 19),
+        panel = Color3.fromRGB(29, 27, 27), text = Color3.fromRGB(247, 244, 240),
+        textDim = Color3.fromRGB(169, 160, 153), accent = Color3.fromRGB(255, 151, 55),
+        red = Color3.fromRGB(123, 65, 34), off = Color3.fromRGB(61, 51, 46),
     }
-    
+
     local cfg = {
         RapidFire = false, Aimbot = false, CarFly = false, CarGrabActive = false, NoRecoil = false, NoSpread = false,
-        Streamproof = false, ESP_Box = false, ESP_Name = false, ESP_Health = false, ESP_Distance = false,
+        Streamproof = false, ESP_Master = true, ESP_Rainbow = false, ESP_Hex = "#45DBCC", ESP_Box = false, ESP_Name = false, ESP_Health = false, ESP_Distance = false,
         ESP_Tracer = false, ESP_Skeleton = false, ESP_Head = false, ESP_Vehicles = false, TeamCheckAimbot = false,
         TeamCheckESP = false, WallCheckAimbot = false, WallCheckESP = false, TargetPlayer = nil,
         TargetOnESP = false, FOV = 120, Smooth = 0.25, ThrowPower = 5, GrabDistance = 75,
-        GrabFollowSpeed = 16, GrabStrength = 7, SpeedHack = false, SpeedValue = 32, SpinSpeed = 15, MenuBind = Enum.KeyCode.Insert, GrabBind = Enum.KeyCode.Y,
+        GrabFollowSpeed = 16, SpeedHack = false, SpeedValue = 32, SpinSpeed = 15, PlayerFly = false, FlySpeed = 55, NoClip = false, InfiniteJump = false, JumpBoost = false, JumpValue = 65, MenuBind = Enum.KeyCode.Insert, GrabBind = Enum.KeyCode.Y,
         ThrowBind = Enum.UserInputType.MouseButton1, Crosshair_On = false, Crosshair_Thickness = 2,
         Crosshair_Length = 10, Crosshair_Gap = 5, Crosshair_Color = Color3.fromRGB(240, 240, 240),
         Crosshair_Hex = "#00FF88", Crosshair_Outline = true, Crosshair_Dot = false,
+        PetalCount = 24,
     }
     
     -- Perfis: apenas valores simples da configuracao; nunca executa codigo importado.
@@ -158,14 +160,98 @@ local ok, err = pcall(function()
     
     local win = Instance.new("Frame")
     win.Size = UDim2.fromOffset(920, 530)
-    win.Position = UDim2.new(0.5, -600, 0.5, -265)
+    win.Position = UDim2.new(0.5, -460, 0.5, -265)
     win.BackgroundColor3 = THEME.bg
-    win.BackgroundTransparency = 0.10
+    win.BackgroundTransparency = 0
     win.BorderSizePixel = 0
     win.Visible = true
     win.Parent = sg
     Instance.new("UICorner", win).CornerRadius = UDim.new(0, 8)
     
+    -- Wallpaper Roblox Creator Store: Sakura (Decal 8997180365).
+    -- Fica atras dos controles, com opacidade baixa para manter legibilidade.
+    local wallpaper = Instance.new("ImageLabel")
+    wallpaper.Name = "CQBER_Wallpaper"
+    wallpaper.Size = UDim2.fromScale(1, 1)
+    wallpaper.BackgroundTransparency = 1
+    wallpaper.Image = "rbxassetid://8997180365"
+    wallpaper.ImageTransparency = 0.88
+    wallpaper.ScaleType = Enum.ScaleType.Crop
+    wallpaper.ZIndex = 0
+    wallpaper.Parent = win
+    Instance.new("UICorner", wallpaper).CornerRadius = UDim.new(0, 8)
+
+    -- Petalas animadas, exclusivamente decorativas, atras dos botoes.
+    -- Cada petala e uma forma de UI local; nao depende de imagem externa.
+    local petalLayer = Instance.new("Frame")
+    petalLayer.Name = "SakuraPetals"
+    petalLayer.Size = UDim2.fromScale(1, 1)
+    petalLayer.BackgroundTransparency = 1
+    petalLayer.ClipsDescendants = true
+    petalLayer.ZIndex = 1
+    petalLayer.Parent = win
+    local petalRandom = Random.new()
+    -- Petalas em cobre, champagne e branco, combinando com Ember Blossom.
+    local petalColors = {
+        Color3.fromRGB(255, 151, 55),
+        Color3.fromRGB(255, 194, 129),
+        Color3.fromRGB(255, 229, 191),
+        Color3.fromRGB(247, 244, 240),
+    }
+    local petals = {}
+    local function createPetal()
+        local petal = Instance.new("Frame")
+        local size = petalRandom:NextInteger(5, 12)
+        petal.Size = UDim2.fromOffset(size, math.floor(size * 1.5))
+        petal.BackgroundColor3 = petalColors[petalRandom:NextInteger(1, #petalColors)]
+        petal.BackgroundTransparency = petalRandom:NextNumber(0.24, 0.60)
+        petal.BorderSizePixel = 0
+        petal.Rotation = petalRandom:NextInteger(-70, 70)
+        petal.ZIndex = 1
+        petal.Parent = petalLayer
+        Instance.new("UICorner", petal).CornerRadius = UDim.new(1, 0)
+        petals[#petals + 1] = {
+            gui = petal,
+            x = petalRandom:NextNumber(0, 1),
+            y = petalRandom:NextNumber(-1, 1),
+            speed = petalRandom:NextNumber(0.025, 0.085),
+            sway = petalRandom:NextNumber(0.012, 0.045),
+            phase = petalRandom:NextNumber(0, 6.28),
+            rotation = petalRandom:NextNumber(-32, 32),
+        }
+    end
+    local function updatePetalCount()
+        local desired = math.clamp(math.floor(tonumber(cfg.PetalCount) or 24), 0, 100)
+        while #petals < desired do createPetal() end
+        while #petals > desired do
+            local item = table.remove(petals)
+            if item and item.gui then item.gui:Destroy() end
+        end
+    end
+    updatePetalCount()
+    profileRefresh.PetalCount = updatePetalCount
+    local petalClock = 0
+    safeConnect(RunService.RenderStepped, function(dt)
+        if isUnloaded or not win.Visible then return end
+        if #petals ~= math.clamp(math.floor(tonumber(cfg.PetalCount) or 24), 0, 100) then
+            updatePetalCount()
+        end
+        dt = math.min(dt, 0.06)
+        petalClock = petalClock + dt
+        for _, item in ipairs(petals) do
+            item.y = item.y + item.speed * dt
+            if item.y > 1.08 then
+                item.y = -0.08
+                item.x = petalRandom:NextNumber(0, 1)
+            end
+            item.gui.Position = UDim2.fromScale(
+                math.clamp(item.x + math.sin(petalClock * 0.9 + item.phase) * item.sway, 0, 1),
+                item.y
+            )
+            item.gui.Rotation = item.rotation + math.sin(petalClock + item.phase) * 28
+        end
+    end)
+
     local winStroke = Instance.new("UIStroke")
     winStroke.Color = THEME.accent
     winStroke.Thickness = 1
@@ -175,7 +261,7 @@ local ok, err = pcall(function()
     local topBar = Instance.new("Frame")
     topBar.Size = UDim2.new(1, 0, 0, 42)
     topBar.BackgroundColor3 = THEME.panel
-    topBar.BackgroundTransparency = 0.08
+    topBar.BackgroundTransparency = 0.02
     topBar.BorderSizePixel = 0
     topBar.Parent = win
     Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 8)
@@ -205,13 +291,35 @@ local ok, err = pcall(function()
     titleLabel.Size = UDim2.new(1, -40, 1, 0)
     titleLabel.Position = UDim2.new(0, 20, 0, 0)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = "CQBER // MENU"
+    titleLabel.Text = "✿  CQBER  /  EMBER BLOSSOM"
     titleLabel.TextColor3 = THEME.text
     titleLabel.TextSize = 16
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = topBar
     
+    -- Busca rapida de opcoes, inspirada nos menus FiveM.
+    local searchBox = Instance.new("TextBox")
+    searchBox.Name = "FunctionSearch"
+    searchBox.Size = UDim2.new(0, 220, 0, 26)
+    searchBox.Position = UDim2.new(1, -274, 0.5, -13)
+    searchBox.BackgroundColor3 = THEME.bg
+    searchBox.BackgroundTransparency = 0.12
+    searchBox.BorderSizePixel = 0
+    searchBox.PlaceholderText = "⌕  Buscar função..."
+    searchBox.PlaceholderColor3 = THEME.textDim
+    searchBox.Text = ""
+    searchBox.TextColor3 = THEME.text
+    searchBox.TextSize = 12
+    searchBox.Font = Enum.Font.Gotham
+    searchBox.ClearTextOnFocus = false
+    searchBox.ZIndex = 12
+    searchBox.Parent = topBar
+    Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 5)
+    local searchStroke = Instance.new("UIStroke", searchBox)
+    searchStroke.Color = THEME.off
+    searchStroke.Thickness = 1
+
     local minBtn = Instance.new("TextButton")
     minBtn.Size = UDim2.new(0, 30, 0, 30)
     minBtn.Position = UDim2.new(1, -40, 0.5, -15)
@@ -373,14 +481,14 @@ local ok, err = pcall(function()
     previewPanel.Name = "AvatarPreviewPanel"
     previewPanel.Size = UDim2.new(0, 280, 1, 0)
     previewPanel.Position = UDim2.new(1, 9, 0, 0)
-    previewPanel.BackgroundColor3 = Color3.fromRGB(17, 16, 22)
+    previewPanel.BackgroundColor3 = Color3.fromRGB(9, 9, 9)
     previewPanel.BackgroundTransparency = 0
     previewPanel.BorderSizePixel = 0
     previewPanel.Parent = win
     -- Janela externa conectada visualmente a janela principal; sem UICorner
     previewPanel.Visible = false
     local previewBorder = Instance.new("UIStroke")
-    previewBorder.Color = Color3.fromRGB(220, 145, 184)
+    previewBorder.Color = THEME.accent
     previewBorder.Thickness = 1
     previewBorder.Parent = previewPanel
     local previewTitle = Instance.new("TextLabel")
@@ -395,7 +503,7 @@ local ok, err = pcall(function()
     avatarView.Name = "Character3D"
     avatarView.Size = UDim2.new(1, -12, 1, -58)
     avatarView.Position = UDim2.fromOffset(6, 26)
-    avatarView.BackgroundColor3 = Color3.fromRGB(9, 9, 15)
+    avatarView.BackgroundColor3 = Color3.fromRGB(4, 4, 4)
     avatarView.BackgroundTransparency = 0
     avatarView.Ambient = Color3.fromRGB(185,185,185)
     avatarView.LightColor = Color3.new(1,1,1)
@@ -546,6 +654,7 @@ local ok, err = pcall(function()
     local currentActiveTab = nil
     
     local function selectTab(name)
+        searchBox.Text = ""
         for pName, pg in pairs(tabPages) do pg.Visible = false end
         for bName, bt in pairs(tabButtons) do
             bt.BackgroundTransparency = 1
@@ -646,6 +755,28 @@ local ok, err = pcall(function()
         return sc
     end
     
+    local function filterCurrentPage()
+        local query = string.lower(searchBox.Text):gsub("^%s+", ""):gsub("%s+$", "")
+        local page = currentActiveTab and tabPages[currentActiveTab]
+        if not page then return end
+        for _, child in ipairs(page:GetChildren()) do
+            if child:IsA("GuiObject") and child.Name ~= "SectionHeading" then
+                local matched = query == ""
+                if not matched then
+                    for _, desc in ipairs(child:GetDescendants()) do
+                        if (desc:IsA("TextLabel") or desc:IsA("TextButton")) and
+                            string.find(string.lower(desc.Text), query, 1, true) then
+                            matched = true
+                            break
+                        end
+                    end
+                end
+                child.Visible = matched
+            end
+        end
+    end
+    safeConnect(searchBox:GetPropertyChangedSignal("Text"), filterCurrentPage)
+
     local catCombate = createAccordionCategory("Combate")
     local catVisual = createAccordionCategory("Visual (ESP)")
     local catVeiculos = createAccordionCategory("Veículos")
@@ -726,7 +857,7 @@ local ok, err = pcall(function()
         heading.LayoutOrder = -100
         heading.Size = UDim2.new(1, -10, 0, 42)
         heading.BackgroundTransparency = 1
-        heading.Text = item[2]
+        heading.Text = "LAA  /  " .. item[2]
         heading.Font = Enum.Font.GothamBold
         heading.TextSize = 17
         heading.TextColor3 = THEME.accent
@@ -734,19 +865,27 @@ local ok, err = pcall(function()
         heading.Parent = item[1]
     end
     
+    -- Um unico embed/borda por secao; controles internos sem caixas separadas.
+    for _, item in ipairs(headings) do
+        local section = item[1]
+        if section ~= vehiclesPage then
+            section.BackgroundColor3 = THEME.bg
+            section.BackgroundTransparency = 0.08
+            local outline = Instance.new("UIStroke")
+            outline.Name = "LAA_SectionOutline"
+            outline.Color = THEME.off
+            outline.Thickness = 1
+            outline.Parent = section
+        end
+    end
+
     local function makeToggle(parent, label, key, cb)
         local r = Instance.new("Frame")
         r.Size = UDim2.new(1, -10, 0, 23)
-        r.BackgroundColor3 = THEME.panel
-        r.BackgroundTransparency = 0.20
+        r.BackgroundColor3 = THEME.bg
+        r.BackgroundTransparency = 1
         r.BorderSizePixel = 0
         r.Parent = parent
-        local embedStroke = Instance.new("UIStroke")
-        embedStroke.Color = THEME.off
-        embedStroke.Thickness = 1
-        embedStroke.Transparency = 0.10
-        embedStroke.Parent = r
-        Instance.new("UICorner", r).CornerRadius = UDim.new(0, 5)
         local l = Instance.new("TextLabel")
         l.Size = UDim2.new(1, -60, 1, 0)
         l.BackgroundTransparency = 1
@@ -756,25 +895,30 @@ local ok, err = pcall(function()
         l.Font = Enum.Font.Gotham
         l.TextXAlignment = Enum.TextXAlignment.Left
         l.Parent = r
+        -- Switch arredondado, estilo menu FiveM.
         local b = Instance.new("TextButton")
-        b.Size = UDim2.fromOffset(18, 18)
-        b.Position = UDim2.new(1, -23, 0.5, -9)
+        b.Name = "ToggleSwitch"
+        b.Size = UDim2.fromOffset(36, 18)
+        b.Position = UDim2.new(1, -42, 0.5, -9)
         b.BackgroundColor3 = cfg[key] and THEME.accent or THEME.off
-        b.Text = cfg[key] and "✓" or ""
-        b.TextColor3 = Color3.fromRGB(255,255,255)
-        b.TextSize = 15
-        b.Font = Enum.Font.GothamBold
+        b.Text = ""
         b.AutoButtonColor = false
         b.BorderSizePixel = 0
         b.Parent = r
-        local checkboxStroke = Instance.new("UIStroke")
-        checkboxStroke.Color = THEME.accent
-        checkboxStroke.Thickness = 1
-        checkboxStroke.Parent = b
+        Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0)
+        local dot = Instance.new("Frame")
+        dot.Name = "SwitchDot"
+        dot.Size = UDim2.fromOffset(14, 14)
+        dot.Position = cfg[key] and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+        dot.BackgroundColor3 = THEME.text
+        dot.BorderSizePixel = 0
+        dot.Parent = b
+        Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
         local function updateVisuals()
             b.BackgroundColor3 = cfg[key] and THEME.accent or THEME.off
-            b.Text = cfg[key] and "✓" or ""
+            dot.Position = cfg[key] and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
         end
+        profileRefresh[key] = updateVisuals
 
         b.MouseButton1Click:Connect(function()
             cfg[key] = not cfg[key]
@@ -794,15 +938,9 @@ local ok, err = pcall(function()
         local r = Instance.new("Frame")
         r.Size = UDim2.new(1, -10, 0, 44)
         r.BackgroundColor3 = THEME.panel
-        r.BackgroundTransparency = 0.20
+        r.BackgroundTransparency = 1
         r.BorderSizePixel = 0
         r.Parent = parent
-        local embedStroke = Instance.new("UIStroke")
-        embedStroke.Color = THEME.off
-        embedStroke.Thickness = 1
-        embedStroke.Transparency = 0.10
-        embedStroke.Parent = r
-        Instance.new("UICorner", r).CornerRadius = UDim.new(0, 5)
         local l = Instance.new("TextLabel")
         l.Size = UDim2.new(1, -96, 0, 18)
         l.BackgroundTransparency = 1
@@ -816,7 +954,7 @@ local ok, err = pcall(function()
         bar.Name = "SliderTrack"
         bar.Size = UDim2.new(1, -82, 0, 14)
         bar.Position = UDim2.new(0, 6, 0, 27)
-        bar.BackgroundColor3 = Color3.fromRGB(48, 33, 43)
+        bar.BackgroundColor3 = Color3.fromRGB(37, 37, 37)
         bar.BorderSizePixel = 0
         bar.Parent = r
         local fill = Instance.new("Frame")
@@ -829,18 +967,18 @@ local ok, err = pcall(function()
         knob.Name = "SliderHandle"
         knob.Size = UDim2.fromOffset(5, 14)
         knob.AnchorPoint = Vector2.new(0.5, 0.5)
-        knob.BackgroundColor3 = Color3.fromRGB(255, 235, 247)
+        knob.BackgroundColor3 = THEME.text
         knob.BorderSizePixel = 0
         knob.Parent = bar
         local valueBox = Instance.new("TextBox")
         valueBox.Name = "SliderValue"
         valueBox.Size = UDim2.new(0, 64, 0, 20)
         valueBox.Position = UDim2.new(1, -68, 0, 24)
-        valueBox.BackgroundColor3 = Color3.fromRGB(35, 25, 34)
+        valueBox.BackgroundColor3 = Color3.fromRGB(27, 27, 27)
         valueBox.BorderColor3 = THEME.accent
         valueBox.BorderSizePixel = 1
         valueBox.TextXAlignment = Enum.TextXAlignment.Center
-        valueBox.TextColor3 = Color3.fromRGB(255, 235, 247)
+        valueBox.TextColor3 = THEME.text
         valueBox.TextSize = 11
         valueBox.ZIndex = 8
         valueBox.Font = Enum.Font.Gotham
@@ -985,6 +1123,40 @@ local ok, err = pcall(function()
         if input.UserInputType == Enum.UserInputType.MouseButton1 then rapidHeld = false end
     end)
     
+    makeToggle(espPlayerPage, "ESP GERAL (liga/desliga tudo)", "ESP_Master")
+    makeToggle(espPlayerPage, "Visuals | Rainbow Mode", "ESP_Rainbow")
+    local espHexRow = Instance.new("Frame")
+    espHexRow.Size = UDim2.new(1, -12, 0, 36)
+    espHexRow.BackgroundTransparency = 1
+    espHexRow.Parent = espPlayerPage
+    local espHexLabel = Instance.new("TextLabel")
+    espHexLabel.Size = UDim2.new(0.52, 0, 1, 0)
+    espHexLabel.BackgroundTransparency = 1
+    espHexLabel.Text = "Cor ESP (HEX)"
+    espHexLabel.TextColor3 = THEME.text
+    espHexLabel.TextSize = 13
+    espHexLabel.Font = Enum.Font.Gotham
+    espHexLabel.TextXAlignment = Enum.TextXAlignment.Left
+    espHexLabel.Parent = espHexRow
+    local espHexBox = Instance.new("TextBox")
+    espHexBox.Size = UDim2.new(0.44, 0, 0, 28)
+    espHexBox.Position = UDim2.new(0.56, 0, 0, 4)
+    espHexBox.BackgroundColor3 = THEME.off
+    espHexBox.TextColor3 = THEME.text
+    espHexBox.PlaceholderText = "#45DBCC"
+    espHexBox.Text = cfg.ESP_Hex
+    espHexBox.TextSize = 13
+    espHexBox.Font = Enum.Font.Code
+    espHexBox.Parent = espHexRow
+    Instance.new("UICorner", espHexBox).CornerRadius = UDim.new(0, 6)
+    safeConnect(espHexBox.FocusLost, function()
+        local v = espHexBox.Text:upper()
+        if not v:match("^#%x%x%x%x%x%x$") then v = cfg.ESP_Hex end
+        cfg.ESP_Hex = v
+        espHexBox.Text = v
+        scheduleProfileSave()
+    end)
+    table.insert(profileRefresh, function() espHexBox.Text = cfg.ESP_Hex end)
     makeToggle(espPlayerPage, "ESP Box", "ESP_Box")
     makeToggle(espPlayerPage, "ESP Name", "ESP_Name")
     makeToggle(espPlayerPage, "ESP Health", "ESP_Health")
@@ -994,7 +1166,7 @@ local ok, err = pcall(function()
     makeToggle(espPlayerPage, "Team Check", "TeamCheckESP")
     makeToggle(espPlayerPage, "Wall Check", "WallCheckESP")
     
-    makeToggle(espCarPage, "ESP Veículos", "ESP_Vehicles")
+    makeToggle(espCarPage, "Vehicle ESP | Veiculos", "ESP_Vehicles")
     
     makeToggle(crossPage, "Ativar Crosshair", "Crosshair_On")
     makeToggle(crossPage, "Modo Ponto ( . )", "Crosshair_Dot")
@@ -1022,11 +1194,10 @@ local ok, err = pcall(function()
         end
     end)
     
-    makeToggle(carFisicaPage, "Ativar Grab / Throw", "CarGrabActive")
-    makeSlider(carFisicaPage, "Força do Arremesso", "ThrowPower", 0, 10, 5, true)
-    makeSlider(carFisicaPage, "Força do Grab", "GrabStrength", 1, 10, 7, true)
-    makeSlider(carFisicaPage, "Alcance para Pegar Carro", "GrabDistance", 45, 150, 75, true)
-    makeToggle(carFisicaPage, "Car Fly (WASD)", "CarFly", function(s) toggleCarFly(s) end)
+    makeToggle(carFisicaPage, "Vehicle Control | Grab", "CarGrabActive")
+    makeSlider(carFisicaPage, "Vehicle Launch | Potencia", "ThrowPower", 0, 10, 5, true)
+    makeSlider(carFisicaPage, "Vehicle Grab | Alcance", "GrabDistance", 45, 150, 75, true)
+    makeToggle(carFisicaPage, "Vehicle Fly | WASD", "CarFly", function(s) toggleCarFly(s) end)
     
     local vehScroll = Instance.new("ScrollingFrame")
     vehScroll.Size = UDim2.new(1, -10, 0, 200)
@@ -1184,8 +1355,8 @@ local ok, err = pcall(function()
     makeToggle(funChatPage, "Speedhack", "SpeedHack", function()
         updateSpeed()
     end)
-    makeSlider(funChatPage, "Velocidade", "SpeedValue", 16, 150, 32, true)
-    makeSlider(funChatPage, "Velocidade do Spin", "SpinSpeed", 1, 90, 15, true)
+    makeSlider(funChatPage, "Movement | Walk Speed", "SpeedValue", 16, 150, 32, true)
+    makeSlider(funChatPage, "Fun | Spin Speed", "SpinSpeed", 1, 90, 15, true)
     safeConnect(LP.CharacterAdded, function(character)
         task.defer(function()
             local humanoid = character:WaitForChild("Humanoid", 8)
@@ -1198,6 +1369,101 @@ local ok, err = pcall(function()
         if cfg.SpeedHack then updateSpeed() end
     end)
     table.insert(allConnections, speedConnection)
+
+    -- MOVIMENTO: Fly, Noclip, Pulo Infinito e ajuste de pulo.
+    -- Tudo e local, reversivel e encerrado no Unload.
+    local movementVelocity, movementGyro, movementRoot
+    local noclipOriginal = setmetatable({}, {__mode = "k"})
+    local savedJumps = setmetatable({}, {__mode = "k"})
+    local function stopPlayerFly()
+        if movementVelocity then movementVelocity:Destroy(); movementVelocity = nil end
+        if movementGyro then movementGyro:Destroy(); movementGyro = nil end
+        movementRoot = nil
+    end
+    local function restoreNoclip()
+        for part, value in pairs(noclipOriginal) do
+            if part and part.Parent then pcall(function() part.CanCollide = value end) end
+            noclipOriginal[part] = nil
+        end
+    end
+    local function restoreJump()
+        for hum, data in pairs(savedJumps) do
+            if hum and hum.Parent then
+                pcall(function() hum.UseJumpPower = data.usePower; hum.JumpPower = data.power; hum.JumpHeight = data.height end)
+            end
+            savedJumps[hum] = nil
+        end
+    end
+    makeToggle(funChatPage, "Player Fly | Modo Livre", "PlayerFly", function(on)
+        if not on then stopPlayerFly() end
+    end)
+    makeSlider(funChatPage, "Player Fly | Velocidade", "FlySpeed", 10, 200, 55, true)
+    makeToggle(funChatPage, "Noclip (atravessar paredes)", "NoClip", function(on)
+        if not on then restoreNoclip() end
+    end)
+    makeToggle(funChatPage, "Movement | Infinite Jump", "InfiniteJump")
+    makeToggle(funChatPage, "Pulo Alto", "JumpBoost", function(on)
+        if not on then restoreJump() end
+    end)
+    makeSlider(funChatPage, "Altura do Pulo", "JumpValue", 50, 180, 65, true)
+    safeConnect(UIS.JumpRequest, function()
+        if isUnloaded or not cfg.InfiniteJump or UIS:GetFocusedTextBox() then return end
+        local char = LP.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum and hum.Health > 0 then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end)
+    safeConnect(RunService.Heartbeat, function()
+        if isUnloaded then return end
+        local char = LP.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if cfg.NoClip and char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    if noclipOriginal[part] == nil then noclipOriginal[part] = part.CanCollide end
+                    part.CanCollide = false
+                end
+            end
+        end
+        if cfg.JumpBoost and hum then
+            if not savedJumps[hum] then
+                savedJumps[hum] = {usePower = hum.UseJumpPower, power = hum.JumpPower, height = hum.JumpHeight}
+            end
+            hum.UseJumpPower = true
+            hum.JumpPower = math.clamp(tonumber(cfg.JumpValue) or 65, 50, 180)
+        end
+        if cfg.PlayerFly and root and hum and hum.Health > 0 then
+            if movementRoot ~= root or not movementVelocity or not movementVelocity.Parent then
+                stopPlayerFly()
+                movementRoot = root
+                movementVelocity = Instance.new("BodyVelocity")
+                movementVelocity.Name = "CQBER_PlayerFlyVelocity"
+                movementVelocity.MaxForce = Vector3.new(1e7, 1e7, 1e7)
+                movementVelocity.P = 12000
+                movementVelocity.Parent = root
+                movementGyro = Instance.new("BodyGyro")
+                movementGyro.Name = "CQBER_PlayerFlyGyro"
+                movementGyro.MaxTorque = Vector3.new(1e7, 1e7, 1e7)
+                movementGyro.P = 12000
+                movementGyro.Parent = root
+            end
+            local camera = workspace.CurrentCamera
+            if camera then
+                local cf = camera.CFrame
+                local dir = Vector3.zero
+                if UIS:IsKeyDown(Enum.KeyCode.W) then dir += cf.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= cf.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= cf.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.D) then dir += cf.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.yAxis end
+                if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.yAxis end
+                movementVelocity.Velocity = dir.Magnitude > 0 and dir.Unit * math.clamp(tonumber(cfg.FlySpeed) or 55, 10, 200) or Vector3.zero
+                movementGyro.CFrame = CFrame.lookAt(root.Position, root.Position + Vector3.new(cf.LookVector.X, 0, cf.LookVector.Z).Unit)
+            end
+        elseif movementVelocity then
+            stopPlayerFly()
+        end
+    end)
 
     local spinToggle = Instance.new("TextButton")
     spinToggle.Size = UDim2.new(1, -10, 0, 26)
@@ -1313,10 +1579,20 @@ local ok, err = pcall(function()
     Players.PlayerAdded:Connect(function() task.wait(0.5); refreshTpList() end)
     Players.PlayerRemoving:Connect(function() task.wait(0.5); refreshTpList() end)
     
+    -- Controle visual: zero remove todas as petalas; 100 multiplica o efeito.
+    makeSlider(keybindsPage, "Quantidade de Petalas", "PetalCount", 0, 100, 24, true)
+
     -- [ ABA CONFIGURAÇÕES ]
     local function unloadScript()
         cfg.SpeedHack = false
         updateSpeed()
+        cfg.PlayerFly = false
+        cfg.NoClip = false
+        cfg.JumpBoost = false
+        cfg.InfiniteJump = false
+        stopPlayerFly()
+        restoreNoclip()
+        restoreJump()
         isUnloaded = true
         for _, conn in ipairs(allConnections) do pcall(function() conn:Disconnect() end) end
         if sg then sg:Destroy() end
@@ -1559,7 +1835,33 @@ local ok, err = pcall(function()
         end
     end
     
+    local function currentESPColor()
+        if cfg.ESP_Rainbow then return Color3.fromHSV((tick() * 0.19) % 1, 0.8, 1) end
+        local hex = tostring(cfg.ESP_Hex or "#45DBCC")
+        local ok, col = pcall(function() return Color3.fromHex(hex) end)
+        return ok and col or THEME.accent
+    end
+    local function hideESP()
+        for _, o in pairs(esp) do
+            for k, v in pairs(o) do
+                if k == "skeleton" then
+                    for _, line in ipairs(v) do line.Visible = false end
+                else v.Visible = false end
+            end
+        end
+        for _, data in pairs(espVeh) do if data.box then data.box.Visible = false end end
+    end
     local function updESP()
+        if not cfg.ESP_Master then hideESP(); return end
+        local espColor = currentESPColor()
+        for _, o in pairs(esp) do
+            for k, v in pairs(o) do
+                if k == "skeleton" then
+                    for _, line in ipairs(v) do line.Color = espColor end
+                elseif k ~= "health" then v.Color = espColor end
+            end
+        end
+        for _, data in pairs(espVeh) do if data.box then data.box.Color = espColor end end
         local myChar = LP.Character
         local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
         local screenSize = Cam.ViewportSize
@@ -1732,6 +2034,9 @@ local ok, err = pcall(function()
                 and (not seat.Occupant or cfg.GrabOccupiedCars) then
                 local part = seat.AssemblyRootPart or seat
                 if part and not part.Anchored then
+                    -- Pre-filtro barato: evita calcular bounding box em veiculos distantes.
+                    local seatDistance = (seat.Position - root.Position).Magnitude
+                    if seatDistance <= range + 90 then
                     local distance = vehicleDistance(model, root.Position)
                     local aimed = mouseTarget and mouseTarget:IsDescendantOf(model)
                     if distance <= range or (aimed and (seat.Position - root.Position).Magnitude <= range + 25) then
@@ -1740,6 +2045,7 @@ local ok, err = pcall(function()
                             bestScore, best = score, model
                         end
                     end
+                    end -- pre-filtro por distancia
                 end
             end
         end
@@ -1747,7 +2053,7 @@ local ok, err = pcall(function()
     end
 
     local function grabForce(part)
-        local strength = math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10)
+        local strength = 9
         local mass = math.max(part.AssemblyMass, 1)
         return math.clamp(mass * (12000 + strength * 13000), 100000, 50000000)
     end
@@ -1755,6 +2061,7 @@ local ok, err = pcall(function()
     stopGrab = function()
         if grabConn then grabConn:Disconnect(); grabConn = nil end
         if grabState then
+            if grabState.orientation then grabState.orientation:Destroy() end
             if grabState.align then grabState.align:Destroy() end
             if grabState.attachment then grabState.attachment:Destroy() end
             if grabState.target then grabState.target:Destroy() end
@@ -1789,23 +2096,61 @@ local ok, err = pcall(function()
         target.Parent = workspace
         local attachment = Instance.new("Attachment")
         attachment.Name = "CQBER_GrabAttachment"
+        attachment.Position = Vector3.zero
         attachment.Parent = part
         local align = Instance.new("AlignPosition")
         align.Name = "CQBER_GrabAlign"
         align.Mode = Enum.PositionAlignmentMode.OneAttachment
         align.Attachment0 = attachment
         align.MaxForce = grabForce(part)
-        align.MaxVelocity = 85 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 12
-        align.Responsiveness = 20 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 7
+        align.MaxVelocity = 34
+        align.Responsiveness = 13
         align.RigidityEnabled = false
         align.ApplyAtCenterOfMass = true
         align.Parent = part
+        -- Mantem o carro nivelado, sem rodar no ar durante o Y.
+        local orientation = Instance.new("AlignOrientation")
+        orientation.Name = "CQBER_GrabLevel"
+        orientation.Mode = Enum.OrientationAlignmentMode.OneAttachment
+        orientation.Attachment0 = attachment
+        orientation.MaxTorque = math.clamp(part.AssemblyMass * 45000, 100000, 50000000)
+        orientation.MaxAngularVelocity = 8
+        orientation.Responsiveness = 30
+        orientation.RigidityEnabled = false
+        local initialLook = part.CFrame.LookVector
+        local horizontalLook = Vector3.new(initialLook.X, 0, initialLook.Z)
+        if horizontalLook.Magnitude < 0.01 then horizontalLook = Vector3.new(0, 0, -1) end
+        local levelRotation = CFrame.lookAt(Vector3.zero, horizontalLook.Unit)
+        orientation.CFrame = levelRotation
+        orientation.Parent = part
+        -- Altura fixa e moderada, medida pelo centro real da carroceria.
+        local boxCF, initialSize = model:GetBoundingBox()
+        local holdHeight = math.clamp(3.1 + initialSize.Y * 0.5, 4.2, 7.5)
+        -- O AlignPosition controla a raiz da montagem, NAO o centro da caixa.
+        -- Preservar o deslocamento evita o carro mergulhar ou subir sem parar.
+        local centerToRoot = part.Position - boxCF.Position
+        local character = LP.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if not root then target:Destroy(); align:Destroy(); orientation:Destroy(); attachment:Destroy(); return end
+        local centerDestination = root.Position + Vector3.new(0, holdHeight, 0)
+        -- Teleporte unico da montagem inteira, mantendo as pecas e colisoes.
+        -- Se o servidor for dono da fisica, ele pode reverter esse movimento.
+        pcall(function()
+            local delta = centerDestination - boxCF.Position
+            model:PivotTo(CFrame.new(delta) * model:GetPivot())
+            part.AssemblyLinearVelocity = Vector3.zero
+            part.AssemblyAngularVelocity = Vector3.zero
+        end)
+        local destination = centerDestination + centerToRoot
+        align.Position = destination
+        target.Position = destination
         grabbedCar = model
-        grabState = {part = part, align = align, attachment = attachment, target = target}
+        grabState = {part = part, align = align, orientation = orientation, attachment = attachment, target = target}
         pcall(function()
             part.AssemblyAngularVelocity = Vector3.zero
         end)
         local stuckFor, warned = 0, false
+        local physicsRefresh = 0
         grabConn = RunService.Heartbeat:Connect(function(dt)
             if isUnloaded or not cfg.CarGrabActive or not model.Parent or not part.Parent then
                 stopGrab(); return
@@ -1815,8 +2160,11 @@ local ok, err = pcall(function()
             local newRoot = part.AssemblyRootPart
             if newRoot and newRoot ~= part and not newRoot.Anchored then
                 part = newRoot
+                local currentBox = model:GetBoundingBox()
+                centerToRoot = part.Position - currentBox.Position
                 attachment.Parent = part
                 align.Parent = part
+                orientation.Parent = part
                 grabState.part = part
             end
             local character = LP.Character
@@ -1825,14 +2173,27 @@ local ok, err = pcall(function()
             local look = root.CFrame.LookVector
             local flat = Vector3.new(look.X, 0, look.Z)
             if flat.Magnitude < 0.01 then flat = Vector3.new(0, 0, -1) end
-            -- Segura mais perto do jogador para facilitar o levantamento inicial.
-            local destination = root.Position + flat.Unit * 12 + Vector3.new(0, 7, 0)
+            -- Mantem o centro da carroceria a altura constante, sem acumular subida.
+            local destination = root.Position + Vector3.new(0, holdHeight, 0) + centerToRoot
+            local move = root.AssemblyLinearVelocity
+            destination = destination + Vector3.new(move.X, 0, move.Z) * 0.08
             target.Position = destination
             align.Position = destination
+            -- AlignPosition cuida da altura; nao injeta velocidade vertical a cada frame.
             -- Recalcula força caso o modelo/assemblagem mude durante o Grab.
-            align.MaxForce = grabForce(part)
-            align.MaxVelocity = 85 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 12
-            align.Responsiveness = 20 + math.clamp(tonumber(cfg.GrabStrength) or 7, 1, 10) * 7
+            physicsRefresh = physicsRefresh + dt
+            if physicsRefresh >= 0.15 then
+                physicsRefresh = 0
+                align.MaxForce = grabForce(part)
+                orientation.MaxTorque = math.clamp(part.AssemblyMass * 45000, 100000, 50000000)
+            end
+            align.MaxVelocity = 34
+            align.Responsiveness = 13
+            orientation.CFrame = levelRotation
+            -- Y segura sem acumular giro nem velocidade vertical exagerada.
+            pcall(function()
+                part.AssemblyAngularVelocity = Vector3.zero
+            end)
             -- Assistencia apenas na simulacao que o cliente efetivamente controla.
             -- Nao tenta contornar a autoridade fisica do servidor.
             local distance = (part.Position - destination).Magnitude
@@ -1857,45 +2218,41 @@ local ok, err = pcall(function()
         if not part or not part.Parent or part.Anchored then return end
         local power = math.clamp(tonumber(cfg.ThrowPower) or 5, 0, 10)
         if power <= 0 then return end
-        -- Arremesso diagonal com predominancia HORIZONTAL.
-        -- Usa a direcao horizontal do personagem para nao depender da camera
-        -- apontando para o ceu. 30 graus acima do horizonte.
+        -- Arremesso diagonal fixo para o ceu: 35 graus acima do horizonte.
+        -- Usa apenas a direcao horizontal do personagem, sem depender
+        -- da inclinacao da camera (que podia mandar o carro reto para cima).
         local character = LP.Character
         local root = character and character:FindFirstChild("HumanoidRootPart")
-        local look = root and root.CFrame.LookVector
-            or (workspace.CurrentCamera and workspace.CurrentCamera.CFrame.LookVector)
+        local camera = workspace.CurrentCamera
+        local look = (root and root.CFrame.LookVector)
+            or (camera and camera.CFrame.LookVector)
             or Vector3.new(0, 0, -1)
-        local horizontal = Vector3.new(look.X, 0, look.Z)
-        if horizontal.Magnitude < 0.01 then horizontal = Vector3.new(0, 0, -1) end
-        horizontal = horizontal.Unit
+        local flat = Vector3.new(look.X, 0, look.Z)
+        if flat.Magnitude < 0.01 then flat = Vector3.new(0, 0, -1) end
+        local angle = math.rad(35)
+        local direction = (flat.Unit * math.cos(angle) + Vector3.yAxis * math.sin(angle)).Unit
 
-        local speed = 95 + power * 45
-        local horizontalSpeed = speed * math.cos(math.rad(30))
-        local verticalSpeed = speed * math.sin(math.rad(30))
-        local desiredVelocity = horizontal * horizontalSpeed + Vector3.new(0, verticalSpeed, 0)
-        local mass = part.AssemblyMass
+        -- A barra de potencia continua controlando a velocidade do arremesso.
+        local speed = 35 + 17 * power + 8 * power * power
+        local desiredVelocity = direction * speed
         pcall(function()
-            -- Substitui a velocidade vertical anterior, que podia estar muito alta
-            -- por causa do Grab, em vez de somar mais impulso para cima.
+            part.AssemblyAngularVelocity = Vector3.zero
             part.AssemblyLinearVelocity = desiredVelocity
         end)
-        -- Reforco curto: prioriza o deslocamento para frente e limita a subida.
+        -- Reforco breve na mesma diagonal fixa, sem seguir a camera.
         local elapsed = 0
         local boost
         boost = RunService.Heartbeat:Connect(function(dt)
             elapsed = elapsed + dt
-            if elapsed > 0.35 or not part.Parent or part.Anchored then
+            if elapsed > 0.35 or not part.Parent or part.Anchored or isUnloaded then
                 boost:Disconnect()
                 return
             end
             pcall(function()
-                local v = part.AssemblyLinearVelocity
-                local along = Vector3.new(v.X, 0, v.Z):Dot(horizontal)
-                local newHorizontal = Vector3.new(v.X, 0, v.Z)
-                    + horizontal * math.max(0, horizontalSpeed - along) * math.clamp(dt * 14, 0, 1)
-                -- Nao permite que a velocidade de subida supere a diagonal.
-                part.AssemblyLinearVelocity = newHorizontal
-                    + Vector3.new(0, math.min(v.Y, verticalSpeed), 0)
+                local velocity = part.AssemblyLinearVelocity
+                local along = velocity:Dot(direction)
+                part.AssemblyLinearVelocity = velocity
+                    + direction * math.max(0, speed - along) * math.clamp(dt * 14, 0, 1)
             end)
         end)
     end
@@ -1984,7 +2341,7 @@ local ok, err = pcall(function()
         runAim()
     end)
     
-    print("[cqber] Menu carregado e atualizado com sucesso.")
+    print("[cqber] EMBER BLOSSOM carregado com sucesso.")
 end)
 if not ok then
     warn("[cqber ERRO]", err)
