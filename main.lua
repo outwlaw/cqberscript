@@ -1,4 +1,4 @@
-local ok, err = pcall(function()
+local ok, err = xpcall(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local UIS = game:GetService("UserInputService")
@@ -10,12 +10,12 @@ local ok, err = pcall(function()
     
     -- Banner geometrico preto e branco, sem asset externo 
     local BANNER_IMAGE = "rbxassetid://8997180365"
-    -- CQBER EMBER BLOSSOM: estilo FiveM, preto fosco, cobre e branco, com sakura.
+    -- CQBER EXTERNAL: interface inspirada na organizacao do Mystic, com acento turquesa.
     local THEME = {
-        bg = Color3.fromRGB(11, 11, 13), sidebar = Color3.fromRGB(19, 18, 19),
-        panel = Color3.fromRGB(29, 27, 27), text = Color3.fromRGB(247, 244, 240),
-        textDim = Color3.fromRGB(169, 160, 153), accent = Color3.fromRGB(255, 151, 55),
-        red = Color3.fromRGB(123, 65, 34), off = Color3.fromRGB(61, 51, 46),
+        bg = Color3.fromRGB(11, 15, 19), sidebar = Color3.fromRGB(15, 22, 27),
+        panel = Color3.fromRGB(22, 31, 37), text = Color3.fromRGB(235, 246, 247),
+        textDim = Color3.fromRGB(145, 165, 174), accent = Color3.fromRGB(48, 224, 200),
+        red = Color3.fromRGB(22, 91, 85), off = Color3.fromRGB(43, 61, 68),
     }
 
     local cfg = {
@@ -165,7 +165,7 @@ local ok, err = pcall(function()
     win.BorderSizePixel = 0
     win.Visible = true
     win.Parent = sg
-    Instance.new("UICorner", win).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", win).CornerRadius = UDim.new(0, 16)
     
     -- Wallpaper Roblox Creator Store: Sakura (Decal 8997180365).
     -- Fica atras dos controles, com opacidade baixa para manter legibilidade.
@@ -174,7 +174,7 @@ local ok, err = pcall(function()
     wallpaper.Size = UDim2.fromScale(1, 1)
     wallpaper.BackgroundTransparency = 1
     wallpaper.Image = "rbxassetid://8997180365"
-    wallpaper.ImageTransparency = 0.96
+    wallpaper.ImageTransparency = 1
     wallpaper.ScaleType = Enum.ScaleType.Crop
     wallpaper.ZIndex = 0
     wallpaper.Parent = win
@@ -182,14 +182,14 @@ local ok, err = pcall(function()
 
     local winStroke = Instance.new("UIStroke")
     winStroke.Color = THEME.accent
-    winStroke.Thickness = 1
-    winStroke.Transparency = 0.5
+    winStroke.Thickness = 1.1
+    winStroke.Transparency = 0
     winStroke.Parent = win
     
     local topBar = Instance.new("Frame")
-    topBar.Size = UDim2.new(1, 0, 0, 42)
-    topBar.BackgroundColor3 = THEME.panel
-    topBar.BackgroundTransparency = 0.02
+    topBar.Size = UDim2.new(1, 0, 0, 62)
+    topBar.BackgroundColor3 = THEME.bg
+    topBar.BackgroundTransparency = 0
     topBar.BorderSizePixel = 0
     topBar.Parent = win
     Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 8)
@@ -197,31 +197,32 @@ local ok, err = pcall(function()
     local banner = Instance.new("ImageLabel")
     banner.Size = UDim2.new(1, 0, 1, 0)
     banner.BackgroundTransparency = 1
-    banner.Image = BANNER_IMAGE
+    banner.Image = ""
     banner.ScaleType = Enum.ScaleType.Crop
     banner.Parent = topBar
     Instance.new("UICorner", banner).CornerRadius = UDim.new(0, 8)
     
     local topGrad = Instance.new("UIGradient")
     topGrad.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 30, 55)),
         ColorSequenceKeypoint.new(0.5, THEME.accent),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 15, 32)),
     }
     topGrad.Transparency = NumberSequence.new{
         NumberSequenceKeypoint.new(0, 0.7),
-        NumberSequenceKeypoint.new(0.5, 0),
+        NumberSequenceKeypoint.new(0.5, 0.62),
         NumberSequenceKeypoint.new(1, 0.7),
     }
     topGrad.Parent = banner
+    topGrad.Enabled = true -- faixa azul escura do CQBER External
     
     local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -40, 1, 0)
+    titleLabel.Size = UDim2.new(0, 310, 1, 0)
     titleLabel.Position = UDim2.new(0, 20, 0, 0)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = "✿  CQBER  /  EMBER BLOSSOM"
-    titleLabel.TextColor3 = THEME.text
-    titleLabel.TextSize = 16
+    titleLabel.Text = "CQBER  EXTERNAL"
+    titleLabel.TextColor3 = THEME.accent
+    titleLabel.TextSize = 20
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = topBar
@@ -230,7 +231,7 @@ local ok, err = pcall(function()
     local searchBox = Instance.new("TextBox")
     searchBox.Name = "FunctionSearch"
     searchBox.Size = UDim2.new(0, 220, 0, 26)
-    searchBox.Position = UDim2.new(1, -274, 0.5, -13)
+    searchBox.Position = UDim2.new(1, -330, 0.5, -13)
     searchBox.BackgroundColor3 = THEME.bg
     searchBox.BackgroundTransparency = 0.12
     searchBox.BorderSizePixel = 0
@@ -243,32 +244,41 @@ local ok, err = pcall(function()
     searchBox.ClearTextOnFocus = false
     searchBox.ZIndex = 12
     searchBox.Parent = topBar
-    Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 5)
+    Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 9)
     local searchStroke = Instance.new("UIStroke", searchBox)
     searchStroke.Color = THEME.off
     searchStroke.Thickness = 1
 
     local minBtn = Instance.new("TextButton")
     minBtn.Size = UDim2.new(0, 30, 0, 30)
-    minBtn.Position = UDim2.new(1, -40, 0.5, -15)
-    minBtn.BackgroundColor3 = THEME.red
+    minBtn.Position = UDim2.new(1, -42, 0.5, -15)
+    minBtn.BackgroundColor3 = THEME.panel
     minBtn.Text = "-"
     minBtn.TextColor3 = THEME.text
     minBtn.TextSize = 20
     minBtn.Font = Enum.Font.GothamBold
     minBtn.Parent = topBar
-    Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 4)
+    Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 9)
     
+    -- Stan: linha divisoria entre cabecalho e conteudo.
+    local headerDivider = Instance.new("Frame")
+    headerDivider.Name = "CQBER_HeaderDivider"
+    headerDivider.Size = UDim2.new(1, -2, 0, 1)
+    headerDivider.Position = UDim2.new(0, 1, 0, 61)
+    headerDivider.BackgroundColor3 = Color3.fromRGB(37, 67, 70)
+    headerDivider.BorderSizePixel = 0
+    headerDivider.Parent = win
+
     local isMinimized = false
     local normalSize = Vector2.new(920, 530)
     local resizeGrip = Instance.new("TextButton")
     resizeGrip.Name = "ResizeGrip"
     resizeGrip.Size = UDim2.fromOffset(34, 34)
     resizeGrip.AnchorPoint = Vector2.new(1, 1)
-    resizeGrip.Position = UDim2.new(1, -2, 1, -2)
+    resizeGrip.Position = UDim2.new(1, -5, 1, -5)
     resizeGrip.Text = "◢"
     resizeGrip.Font = Enum.Font.GothamBold
-    resizeGrip.TextSize = 25
+    resizeGrip.TextSize = 22
     resizeGrip.TextColor3 = THEME.accent
     resizeGrip.BackgroundTransparency = 1
     resizeGrip.ZIndex = 30
@@ -292,13 +302,14 @@ local ok, err = pcall(function()
     minBtn.MouseButton1Click:Connect(function()
         isMinimized = not isMinimized
         if isMinimized then
-            win.Size = UDim2.fromOffset(normalSize.X, 42)
+            win.Size = UDim2.fromOffset(normalSize.X, 62)
             resizeGrip.Visible = false
             sidebar.Visible = false
             content.Visible = false
             profileFrame.Visible = false
             if win:FindFirstChild("OptionsBottomBar") then win.OptionsBottomBar.Visible = false end
             if win:FindFirstChild("AvatarPreviewPanel") then win.AvatarPreviewPanel.Visible = false end
+            if content:FindFirstChild("TeleportPanel") then content.TeleportPanel.Visible = false end
             minBtn.Text = "+"
         else
             win.Size = UDim2.fromOffset(normalSize.X, normalSize.Y)
@@ -307,7 +318,8 @@ local ok, err = pcall(function()
             content.Visible = true
             profileFrame.Visible = true
             if win:FindFirstChild("OptionsBottomBar") then win.OptionsBottomBar.Visible = true end
-            if win:FindFirstChild("AvatarPreviewPanel") then win.AvatarPreviewPanel.Visible = (currentActiveTab == "Jogadores" or currentActiveTab == "Carros") end
+            if win:FindFirstChild("AvatarPreviewPanel") then win.AvatarPreviewPanel.Visible = false end
+            if content:FindFirstChild("TeleportPanel") then content.TeleportPanel.Visible = false end
             minBtn.Text = "-"
         end
     end)
@@ -329,17 +341,17 @@ local ok, err = pcall(function()
     end)
     
     sidebar = Instance.new("ScrollingFrame")
-    sidebar.Size = UDim2.new(0, 150, 1, -92)
-    sidebar.Position = UDim2.new(0, 0, 0, 42)
+    sidebar.Size = UDim2.new(0, 176, 1, -130)
+    sidebar.Position = UDim2.new(0, 0, 0, 62)
     sidebar.BackgroundColor3 = THEME.sidebar
     sidebar.BorderSizePixel = 0
     sidebar.ScrollBarThickness = 2
     sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
     sidebar.Parent = win
-    Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0, 0)
+    Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0, 9)
     
     local sideLayout = Instance.new("UIListLayout", sidebar)
-    sideLayout.Padding = UDim.new(0, 2)
+    sideLayout.Padding = UDim.new(0, 5)
     sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
     sideLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         sidebar.CanvasSize = UDim2.new(0, 0, 0, sideLayout.AbsoluteContentSize.Y + 20)
@@ -350,12 +362,12 @@ local ok, err = pcall(function()
     sidePad.PaddingRight = UDim.new(0, 8)
     
     profileFrame = Instance.new("Frame")
-    profileFrame.Size = UDim2.new(0, 150, 0, 50)
-    profileFrame.Position = UDim2.new(0, 0, 1, -85)
+    profileFrame.Size = UDim2.new(0, 176, 0, 50)
+    profileFrame.Position = UDim2.new(0, 0, 1, -91)
     profileFrame.BackgroundColor3 = THEME.sidebar
     profileFrame.BorderSizePixel = 0
     profileFrame.Parent = win
-    Instance.new("UICorner", profileFrame).CornerRadius = UDim.new(0, 0)
+    Instance.new("UICorner", profileFrame).CornerRadius = UDim.new(0, 9)
     
     local pfp = Instance.new("ImageLabel")
     pfp.Size = UDim2.new(0, 36, 0, 36)
@@ -369,14 +381,14 @@ local ok, err = pcall(function()
     pfpStroke.Thickness = 1
     pfpStroke.Parent = pfp
     pcall(function()
-        pfp.Image = Players:GetUserThumbnailAsync(LP.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+        pfp.Image = ""
     end)
     
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Size = UDim2.new(1, -55, 0, 16)
     nameLabel.Position = UDim2.new(0, 50, 0, 10)
     nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = LP.Name
+    nameLabel.Text = "CQBER EXTERNAL"
     nameLabel.TextColor3 = THEME.text
     nameLabel.TextSize = 12
     nameLabel.Font = Enum.Font.GothamBold
@@ -388,7 +400,7 @@ local ok, err = pcall(function()
     statusLabel.Size = UDim2.new(1, -55, 0, 14)
     statusLabel.Position = UDim2.new(0, 50, 0, 26)
     statusLabel.BackgroundTransparency = 1
-    statusLabel.Text = "Online | CQBER V2"
+    statusLabel.Text = "CQBER EXTERNAL"
     statusLabel.TextColor3 = THEME.accent
     statusLabel.TextSize = 10
     statusLabel.Font = Enum.Font.Gotham
@@ -396,10 +408,10 @@ local ok, err = pcall(function()
     statusLabel.Parent = profileFrame
     
     content = Instance.new("Frame")
-    content.Size = UDim2.new(1, -166, 1, -77)
-    content.Position = UDim2.new(0, 160, 0, 42)
+    content.Size = UDim2.new(1, -196, 1, -110)
+    content.Position = UDim2.new(0, 186, 0, 68)
     content.BackgroundColor3 = THEME.bg
-    content.BackgroundTransparency = 0.28
+    content.BackgroundTransparency = 1
     content.BorderSizePixel = 0
     content.Parent = win
     
@@ -407,9 +419,9 @@ local ok, err = pcall(function()
     -- Avatar 3D do jogador, com sobreposicao de ESP demonstrativa.
     local previewPanel = Instance.new("Frame")
     previewPanel.Name = "AvatarPreviewPanel"
-    previewPanel.Size = UDim2.new(0, 280, 1, 0)
-    previewPanel.Position = UDim2.new(1, 9, 0, 0)
-    previewPanel.BackgroundColor3 = Color3.fromRGB(9, 9, 9)
+    previewPanel.Size = UDim2.fromOffset(340, 505)
+    previewPanel.Position = UDim2.new(1, 16, 0, 12)
+    previewPanel.BackgroundColor3 = THEME.panel
     previewPanel.BackgroundTransparency = 0
     previewPanel.BorderSizePixel = 0
     previewPanel.Parent = win
@@ -422,7 +434,7 @@ local ok, err = pcall(function()
     local previewTitle = Instance.new("TextLabel")
     previewTitle.Size = UDim2.new(1, 0, 0, 25)
     previewTitle.BackgroundTransparency = 1
-    previewTitle.Text = "VISUALIZADOR"
+    previewTitle.Text = "ESP  /  PREVIEW"
     previewTitle.Font = Enum.Font.Code
     previewTitle.TextSize = 12
     previewTitle.TextColor3 = THEME.accent
@@ -431,7 +443,7 @@ local ok, err = pcall(function()
     avatarView.Name = "Character3D"
     avatarView.Size = UDim2.new(1, -12, 1, -58)
     avatarView.Position = UDim2.fromOffset(6, 26)
-    avatarView.BackgroundColor3 = Color3.fromRGB(4, 4, 4)
+    avatarView.BackgroundColor3 = THEME.bg
     avatarView.BackgroundTransparency = 0
     avatarView.Ambient = Color3.fromRGB(185,185,185)
     avatarView.LightColor = Color3.new(1,1,1)
@@ -578,6 +590,7 @@ local ok, err = pcall(function()
         if not isUnloaded then updatePreviewESP() end
     end)
 
+    local funTpPage
     local tabPages, tabButtons = {}, {}
     local currentActiveTab = nil
     
@@ -585,17 +598,19 @@ local ok, err = pcall(function()
         searchBox.Text = ""
         for pName, pg in pairs(tabPages) do pg.Visible = false end
         for bName, bt in pairs(tabButtons) do
-            bt.BackgroundTransparency = 1
+            bt.BackgroundTransparency = 0
+            bt.BackgroundColor3 = THEME.panel
             bt.TextColor3 = THEME.textDim
         end
         if tabPages[name] then
             tabPages[name].Visible = true
             tabButtons[name].BackgroundTransparency = 0
-            tabButtons[name].BackgroundColor3 = THEME.panel
+            tabButtons[name].BackgroundColor3 = Color3.fromRGB(23, 64, 66)
             tabButtons[name].TextColor3 = THEME.accent
             currentActiveTab = name
         end
-        previewPanel.Visible = (not isMinimized) and (name == "Jogadores")
+        previewPanel.Visible = (not isMinimized) and name == "Jogadores" -- visualizador externo à direita
+        funTpPage.Visible = (not isMinimized) and name == "Jogadores"
     end
     
     local function createAccordionCategory(categoryName)
@@ -621,7 +636,7 @@ local ok, err = pcall(function()
         subContainer.BackgroundTransparency = 1
         subContainer.Parent = sidebar
         local subLayout = Instance.new("UIListLayout", subContainer)
-        subLayout.Padding = UDim.new(0, 2)
+        subLayout.Padding = UDim.new(0, 4)
         subLayout.SortOrder = Enum.SortOrder.LayoutOrder
         subLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             subContainer.Size = UDim2.new(1, 0, 0, subLayout.AbsoluteContentSize.Y)
@@ -642,26 +657,32 @@ local ok, err = pcall(function()
     
     local function createSubTab(parent, name)
         local b = Instance.new("TextButton")
-        b.Size = UDim2.new(1, 0, 0, 26)
-        b.BackgroundTransparency = 1
+        b.Size = UDim2.new(1, -6, 0, 26)
+        b.BackgroundTransparency = 0
+        b.BackgroundColor3 = THEME.panel
+        b.BorderSizePixel = 0
         local channelIcons = {
-            ["Aimbot"] = "◎", ["Jogadores"] = "◉", ["Carros"] = "▣",
+            ["Dashboard"] = "⌂", ["Aimbot"] = "◎", ["Jogadores"] = "◉", ["Carros"] = "▣",
             ["Crosshair"] = "+", ["Física"] = "⚙", ["Lista"] = "▤",
             ["Chat / Ações"] = "✦", ["Teleporte Jogadores"] = "➤",
-            ["Teleporte Carros"] = "➤", ["Privacidade"] = "◈",
+            ["Teleporte Carros"] = "➤", ["Fun"] = "✦",
             ["Profiles"] = "▤", ["Keybinds / Unload"] = "⚙",
         }
-        b.Text = "   " .. (channelIcons[name] or "◇") .. "   " .. name
+        b.Text = "  " .. (channelIcons[name] or "◇") .. "   " .. name
         b.TextColor3 = THEME.textDim
-        b.TextSize = 13
+        b.TextSize = 12
         b.Font = Enum.Font.Gotham
         b.TextXAlignment = Enum.TextXAlignment.Left
         b.Parent = parent
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
+        local tileBorder = Instance.new("UIStroke", b)
+        tileBorder.Color = THEME.off
+        tileBorder.Thickness = 1
+        tileBorder.Transparency = 0.62
     
         local sc = Instance.new("ScrollingFrame")
-        sc.Size = UDim2.new(1, -12, 1, -14)
-        sc.Position = UDim2.new(0, 6, 0, 7)
+        sc.Size = UDim2.new(1, -18, 1, -18)
+        sc.Position = UDim2.new(0, 9, 0, 9)
         sc.BackgroundTransparency = 1
         sc.BorderSizePixel = 0
         sc.ScrollBarThickness = 2
@@ -705,16 +726,19 @@ local ok, err = pcall(function()
     end
     safeConnect(searchBox:GetPropertyChangedSignal("Text"), filterCurrentPage)
 
+    local catPrincipal = createAccordionCategory("Principal")
     local catCombate = createAccordionCategory("Combate")
     local catVisual = createAccordionCategory("Visual (ESP)")
     local catVeiculos = createAccordionCategory("Veículos")
-    local catDiversao = createAccordionCategory("Diversão")
-    local catMisc = createAccordionCategory("Misc")
-    local catConfig = createAccordionCategory("Configurações")
+    local catMisc = createAccordionCategory("Utilitários")
+    local catDiversao = catMisc -- diversão agrupada em Utilitários
+    local catConfig = catMisc -- configurações agrupadas em Utilitários
     
+    local principalPage = createSubTab(catPrincipal, "Dashboard")
     local aimPage = createSubTab(catCombate, "Aimbot")
-    local miscPage = createSubTab(catMisc, "Privacidade")
+    local miscPage = createSubTab(catMisc, "Fun")
     local espPlayerPage = createSubTab(catVisual, "Jogadores")
+    espPlayerPage.Size = UDim2.new(0.66, -14, 1, -18) -- espaço reservado para o visualizador ESP
     local crossPage = createSubTab(catVisual, "Crosshair")
     local vehiclesPage = createSubTab(catVeiculos, "Vehicles")
     local vehicleRootLayout = vehiclesPage:FindFirstChildOfClass("UIListLayout")
@@ -723,6 +747,7 @@ local ok, err = pcall(function()
     vehiclesPage.ScrollingEnabled = false
     vehiclesPage.Position = vehiclesPage.Position + UDim2.fromOffset(8, 0)
     vehiclesPage.Size = vehiclesPage.Size - UDim2.fromOffset(16, 0)
+    vehiclesPage.ClipsDescendants = false
 
     local function vehicleSection(name, pos, size)
         local section = Instance.new("ScrollingFrame")
@@ -730,7 +755,7 @@ local ok, err = pcall(function()
         section.Position = pos
         section.Size = size
         section.BackgroundColor3 = THEME.panel
-        section.BackgroundTransparency = 0.16
+        section.BackgroundTransparency = 1
         section.BorderSizePixel = 0
         section.ScrollBarThickness = 3
         section.ScrollBarImageColor3 = THEME.accent
@@ -739,7 +764,8 @@ local ok, err = pcall(function()
         Instance.new("UICorner", section).CornerRadius = UDim.new(0, 6)
         local stroke = Instance.new("UIStroke")
         stroke.Color = THEME.off
-        stroke.Thickness = 1
+        stroke.Thickness = 0
+        stroke.Transparency = 1
         stroke.Parent = section
         local layout = Instance.new("UIListLayout")
         layout.Padding = UDim.new(0, 8)
@@ -750,35 +776,60 @@ local ok, err = pcall(function()
         end)
         return section
     end
-    local espCarPage = vehicleSection("ESP Vehicle", UDim2.fromScale(0,0), UDim2.new(.49,-5,.35,-5))
-    local carFisicaPage = vehicleSection("Físicas e Lista", UDim2.new(0,0,.35,4), UDim2.new(.49,-5,.65,-8))
-    local carListPage = vehicleSection("TP Vehicle", UDim2.new(.51,0,0,0), UDim2.new(.49,-5,1,-5))
-    local funChatPage = createSubTab(catDiversao, "Chat / Ações")
-    local funTpPage = createSubTab(catDiversao, "Teleporte Jogadores")
+    -- Layout compacto: cards terminam perto do ultimo controle, sem bordas gigantes.
+    local espCarPage = vehicleSection("ESP Vehicle", UDim2.new(0, 12, 0, 12), UDim2.new(.5, -24, 0, 115))
+    local carFisicaPage = vehicleSection("Físicas e Lista", UDim2.new(0, 12, 0, 140), UDim2.new(.5, -24, 0, 272))
+    local carListPage = vehicleSection("TP Vehicle", UDim2.new(.5, 12, 0, 12), UDim2.new(.5, -24, 0, 378))
+    local funChatPage = miscPage -- opções de diversão reunidas na aba Fun
+    -- Teleporte integrado ao painel Jogadores, ocupando o antigo espaço do preview.
+    funTpPage = Instance.new("ScrollingFrame")
+    funTpPage.Name = "TeleportPanel"
+    funTpPage.Size = UDim2.new(0.32, -12, 1, -18)
+    funTpPage.Position = UDim2.new(0.68, 2, 0, 9)
+    funTpPage.BackgroundTransparency = 1
+    funTpPage.BorderSizePixel = 0
+    funTpPage.ScrollBarThickness = 2
+    funTpPage.ScrollBarImageColor3 = THEME.accent
+    funTpPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+    funTpPage.Visible = false
+    funTpPage.Parent = content
+    local tpPageLayout = Instance.new("UIListLayout", funTpPage)
+    tpPageLayout.Padding = UDim.new(0, 8)
+    tpPageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    tpPageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        funTpPage.CanvasSize = UDim2.fromOffset(0, tpPageLayout.AbsoluteContentSize.Y + 16)
+    end)
     local keybindsPage = createSubTab(catConfig, "Keybinds / Unload")
     local profilesPage = createSubTab(catConfig, "Profiles / Import Export")
     
     -- Rodape discreto, sem botoes de acesso rapido.
     local footer = Instance.new("TextLabel")
     footer.Name = "CopyrightFooter"
-    footer.Size = UDim2.new(1, -12, 0, 24)
-    footer.Position = UDim2.new(0, 6, 1, -28)
+    footer.Size = UDim2.new(1, -20, 0, 30)
+    footer.Position = UDim2.new(0, 10, 1, -33)
     footer.BackgroundTransparency = 1
     footer.BorderSizePixel = 0
-    footer.Font = Enum.Font.Code
-    footer.TextSize = 12
+    footer.Font = Enum.Font.Gotham
+    footer.TextSize = 11
     footer.TextColor3 = THEME.textDim
-    footer.TextXAlignment = Enum.TextXAlignment.Center
-    footer.Text = "© CQBER — Todos os direitos reservados"
+    footer.TextXAlignment = Enum.TextXAlignment.Right
+    footer.Text = "CQBER EXTERNAL  •  v2.6.0   |   © 2026 CQBER. Todos os direitos reservados."
+    local footerDivider = Instance.new("Frame")
+    footerDivider.Name = "CQBER_FooterDivider"
+    footerDivider.Size = UDim2.new(1, -2, 0, 1)
+    footerDivider.Position = UDim2.new(0, 1, 1, -38)
+    footerDivider.BackgroundColor3 = Color3.fromRGB(37, 67, 70)
+    footerDivider.BorderSizePixel = 0
+    footerDivider.Parent = win
     footer.Parent = win
 
-    selectTab("Aimbot")
+    selectTab("Dashboard")
     local headings = {
-        {aimPage, "AIMBOT OPTIONS"}, {miscPage, "MISC / PRIVACIDADE"},
+        {aimPage, "AIMBOT OPTIONS"}, {miscPage, "FUN / AÇÕES"},
         {espPlayerPage, "ESP OPTIONS"}, {espCarPage, "ESP VEHICLE"},
         {crossPage, "CROSSHAIR OPTIONS"}, {carFisicaPage, "FÍSICAS E LISTA"},
         {carListPage, "TP VEHICLE"}, {funChatPage, "FUN OPTIONS"},
-        {funTpPage, "PLAYER TELEPORT OPTIONS"}, {keybindsPage, "MENU SETTINGS"},
+        {keybindsPage, "MENU SETTINGS"},
         {profilesPage, "PROFILE SETTINGS"},
     }
     for _, item in ipairs(headings) do
@@ -787,41 +838,149 @@ local ok, err = pcall(function()
         heading.LayoutOrder = -100
         heading.Size = UDim2.new(1, -10, 0, 42)
         heading.BackgroundTransparency = 1
-        heading.Text = "✦  " .. item[2]
+        heading.Text = "▰  " .. item[2]
         heading.Font = Enum.Font.GothamBold
-        heading.TextSize = 17
+        heading.TextSize = 13
         heading.TextColor3 = THEME.accent
         heading.TextXAlignment = Enum.TextXAlignment.Left
         heading.Parent = item[1]
     end
     
-    -- Moldura limitada ao ScrollingFrame: nao cria paineis soltos fora da janela.
+    -- Mystic: conteudo recuado e moldura que termina logo depois da ultima opcao.
+    -- A moldura e filha do titulo (nao participa do UIListLayout), e acompanha
+    -- o tamanho real da lista em vez de ocupar toda a altura da pagina.
     for _, item in ipairs(headings) do
         local section = item[1]
-        section.BackgroundColor3 = Color3.fromRGB(35, 33, 33)
-        section.BackgroundTransparency = 0.08
+        section.BackgroundTransparency = 1
         section.BorderSizePixel = 0
-        section.ClipsDescendants = true
-        -- Protege a inicializacao caso o executor/cliente rejeite
-        -- UICorner diretamente neste tipo de ScrollingFrame.
-        pcall(function()
-            local rounded = section:FindFirstChildOfClass("UICorner")
-            if not rounded then
-                rounded = Instance.new("UICorner")
-                rounded.Parent = section
-            end
-            rounded.CornerRadius = UDim.new(0, 10)
-        end)
-        local outline = section:FindFirstChild("CQBER_EmbedOutline")
-        if not outline then
-            outline = Instance.new("UIStroke")
-            outline.Name = "CQBER_EmbedOutline"
-            outline.Parent = section
+        section.ClipsDescendants = (section ~= espCarPage and section ~= carFisicaPage and section ~= carListPage)
+        local oldOutline = section:FindFirstChild("CQBER_EmbedOutline")
+        if oldOutline then oldOutline:Destroy() end
+
+        local padding = section:FindFirstChild("MysticContentPadding")
+        if not padding then
+            padding = Instance.new("UIPadding")
+            padding.Name = "MysticContentPadding"
+            padding.PaddingLeft = UDim.new(0, 30)
+            padding.PaddingRight = UDim.new(0, 30)
+            padding.PaddingTop = UDim.new(0, 10)
+            padding.Parent = section
         end
-        outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        outline.Color = THEME.accent
-        outline.Transparency = 0.25
-        outline.Thickness = 1
+
+        local heading = section:FindFirstChild("SectionHeading")
+        local layout = section:FindFirstChildOfClass("UIListLayout")
+        if heading and layout then
+            heading.Size = UDim2.new(1, -12, 0, 35)
+            heading.TextSize = 13
+            heading.ZIndex = 3
+            local panel = Instance.new("Frame")
+            panel.Name = "MysticFittedPanel"
+            panel.BackgroundColor3 = THEME.panel
+            panel.BackgroundTransparency = 0
+            panel.BorderSizePixel = 0
+            panel.ZIndex = 1
+            panel.Position = UDim2.fromOffset(-12, -3)
+            panel.Size = UDim2.new(1, 10, 0, 100)
+            panel.Parent = heading
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0, 7)
+            corner.Parent = panel
+            local border = Instance.new("UIStroke")
+            border.Color = THEME.accent
+            border.Transparency = 0.35
+            border.Thickness = 1
+            border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            border.Parent = panel
+            local function fitPanel()
+                local height = layout.AbsoluteContentSize.Y + 17
+                panel.Size = UDim2.new(1, 10, 0, math.max(65, height))
+            end
+            layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fitPanel)
+            task.defer(fitPanel)
+        end
+    end
+
+    -- DASHBOARD CQBER EXTERNAL: quatro cards no tema laranja.
+    -- Somente indicadores e atalhos para opcoes reais existentes no script.
+    do
+        local dashboardLayout = principalPage:FindFirstChildOfClass("UIListLayout")
+        if dashboardLayout then dashboardLayout:Destroy() end
+        principalPage.ScrollingEnabled = false
+        principalPage.CanvasSize = UDim2.fromOffset(0, 0)
+        principalPage.BackgroundTransparency = 1
+        local function dashboardCard(title, x, y)
+            local frame = Instance.new("Frame")
+            frame.Name = "DashboardCard"
+            frame.Position = UDim2.new(x, 7, y, 7)
+            frame.Size = UDim2.new(0.485, -16, 0.485, -16)
+            frame.BackgroundColor3 = THEME.panel
+            frame.BorderSizePixel = 0
+            frame.Parent = principalPage
+            Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 9)
+            local stroke = Instance.new("UIStroke", frame)
+            stroke.Color = THEME.accent
+            stroke.Transparency = 0.28
+            stroke.Thickness = 1
+            local heading = Instance.new("TextLabel")
+            heading.Size = UDim2.new(1, -24, 0, 32)
+            heading.Position = UDim2.fromOffset(12, 7)
+            heading.BackgroundTransparency = 1
+            heading.Text = title
+            heading.TextColor3 = THEME.text
+            heading.Font = Enum.Font.GothamBold
+            heading.TextSize = 14
+            heading.TextXAlignment = Enum.TextXAlignment.Left
+            heading.Parent = frame
+            return frame
+        end
+        local function infoLine(frame, text, y, color)
+            local l = Instance.new("TextLabel")
+            l.Size = UDim2.new(1, -26, 0, 23)
+            l.Position = UDim2.fromOffset(13, y)
+            l.BackgroundTransparency = 1
+            l.Text = text
+            l.TextColor3 = color or THEME.textDim
+            l.TextSize = 12
+            l.Font = Enum.Font.Gotham
+            l.TextXAlignment = Enum.TextXAlignment.Left
+            l.TextTruncate = Enum.TextTruncate.AtEnd
+            l.Parent = frame
+            return l
+        end
+        local function navLine(frame, text, y, pageName)
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, -24, 0, 26)
+            b.Position = UDim2.fromOffset(12, y)
+            b.BackgroundColor3 = THEME.off
+            b.BorderSizePixel = 0
+            b.Text = text
+            b.TextColor3 = THEME.text
+            b.Font = Enum.Font.Gotham
+            b.TextSize = 12
+            b.Parent = frame
+            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 7)
+            b.MouseButton1Click:Connect(function() selectTab(pageName) end)
+        end
+        local a = dashboardCard("◉  Informações", 0, 0)
+        infoLine(a, "Nome: " .. LP.Name, 43)
+        infoLine(a, "Versão: CQBER External 2026", 67)
+        infoLine(a, "Status: Interface carregada", 91, THEME.accent)
+        infoLine(a, "User ID: " .. tostring(LP.UserId), 115)
+        infoLine(a, "Place ID: " .. tostring(game.PlaceId), 139)
+        local b = dashboardCard("ϟ  Ações Rápidas", 0.515, 0)
+        navLine(b, "Aimbot / Combate", 44, "Aimbot")
+        navLine(b, "Veículos / Grab", 76, "Vehicles")
+        navLine(b, "Jogadores / Teleporte", 108, "Jogadores")
+        navLine(b, "Atalhos e Unload", 140, "Keybinds / Unload")
+        local c = dashboardCard("◉  Sistema de ESP", 0, 0.515)
+        navLine(c, "ESP Jogadores", 44, "Jogadores")
+        navLine(c, "Crosshair", 76, "Crosshair")
+        infoLine(c, "ESP geral: " .. (cfg.ESP_Master and "Ligado" or "Desligado"), 117)
+        local d = dashboardCard("⚙  Outros", 0.515, 0.515)
+        navLine(d, "Fun / Ações", 44, "Fun")
+        navLine(d, "Jogadores / Teleporte", 76, "Jogadores")
+        navLine(d, "Perfis / Import Export", 108, "Profiles / Import Export")
+        infoLine(d, "Rodograu 2.0  |  by CQBER", 145)
     end
 
     local function makeToggle(parent, label, key, cb)
@@ -978,7 +1137,7 @@ local ok, err = pcall(function()
         b.TextSize = 12
         b.Font = Enum.Font.GothamBold
         b.Parent = parent
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
         b.MouseButton1Click:Connect(callback)
     end
     
@@ -1001,19 +1160,19 @@ local ok, err = pcall(function()
     extrasHeading.Text = "★ EXTRAS"
     extrasHeading.Parent = aimPage
     -- Extras de armas: comportamento depende de cada Tool e das regras do servidor.
-    makeToggle(aimPage, "No Recoil", "NoRecoil")
-    makeToggle(aimPage, "No Spread", "NoSpread")
-    makeToggle(aimPage, "Rapid Fire", "RapidFire")
+    makeToggle(aimPage, "Recoil Control", "NoRecoil")
+    makeToggle(aimPage, "Spread Control", "NoSpread")
+    makeToggle(aimPage, "Rapid Trigger", "RapidFire")
 
     -- Streamspoof local: oculta a interface ao ativar. Nao burla captura externa.
-    makeToggle(miscPage, "Streamspoof (ocultar menu)", "Streamproof", function(enabled)
+    makeToggle(keybindsPage, "Streamspoof (ocultar menu)", "Streamproof", function(enabled)
         if enabled then
             win.Visible = false
         else
             win.Visible = true
         end
     end)
-    makeButton(miscPage, "Mostrar menu (Insert)", function() win.Visible = true end)
+    makeButton(keybindsPage, "Mostrar menu (Insert)", function() win.Visible = true end)
 
     -- Ajustes de tamanho do GUI em Misc; sincronizados com a alca inferior direita.
     local guiSizeHeading = Instance.new("TextLabel")
@@ -1025,26 +1184,26 @@ local ok, err = pcall(function()
     guiSizeHeading.Font = Enum.Font.GothamBold
     guiSizeHeading.TextSize = 14
     guiSizeHeading.TextXAlignment = Enum.TextXAlignment.Left
-    guiSizeHeading.Parent = miscPage
+    guiSizeHeading.Parent = keybindsPage
 
     local function setGuiDimensions(width, height)
         normalSize = Vector2.new(math.clamp(math.floor(width), 430, 1600), math.clamp(math.floor(height), 310, 1100))
         if isMinimized then
-            win.Size = UDim2.fromOffset(normalSize.X, 42)
+            win.Size = UDim2.fromOffset(normalSize.X, 62)
         else
             win.Size = UDim2.fromOffset(normalSize.X, normalSize.Y)
         end
     end
-    makeButton(miscPage, "[ + ] Aumentar GUI", function()
+    makeButton(keybindsPage, "[ + ] Aumentar GUI", function()
         setGuiDimensions(normalSize.X + 100, normalSize.Y + 65)
     end)
-    makeButton(miscPage, "[ - ] Diminuir GUI", function()
+    makeButton(keybindsPage, "[ - ] Diminuir GUI", function()
         setGuiDimensions(normalSize.X - 100, normalSize.Y - 65)
     end)
-    makeButton(miscPage, "Tamanho original (740 x 410)", function()
+    makeButton(keybindsPage, "Tamanho original (740 x 410)", function()
         setGuiDimensions(740, 410)
     end)
-    makeButton(miscPage, "Tamanho grande (1200 x 750)", function()
+    makeButton(keybindsPage, "Tamanho grande (1200 x 750)", function()
         setGuiDimensions(1200, 750)
     end)
     -- A alca '◢' permanece sempre no canto inferior direito quando expandido.
@@ -1068,8 +1227,8 @@ local ok, err = pcall(function()
         if input.UserInputType == Enum.UserInputType.MouseButton1 then rapidHeld = false end
     end)
     
-    makeToggle(espPlayerPage, "ESP GERAL (liga/desliga tudo)", "ESP_Master")
-    makeToggle(espPlayerPage, "Visuals | Rainbow Mode", "ESP_Rainbow")
+    makeToggle(espPlayerPage, "Master ESP", "ESP_Master")
+    makeToggle(espPlayerPage, "Rainbow ESP", "ESP_Rainbow")
     local espHexRow = Instance.new("Frame")
     espHexRow.Size = UDim2.new(1, -12, 0, 36)
     espHexRow.BackgroundTransparency = 1
@@ -1077,7 +1236,7 @@ local ok, err = pcall(function()
     local espHexLabel = Instance.new("TextLabel")
     espHexLabel.Size = UDim2.new(0.52, 0, 1, 0)
     espHexLabel.BackgroundTransparency = 1
-    espHexLabel.Text = "Cor ESP (HEX)"
+    espHexLabel.Text = "ESP Color (HEX)"
     espHexLabel.TextColor3 = THEME.text
     espHexLabel.TextSize = 13
     espHexLabel.Font = Enum.Font.Gotham
@@ -1102,20 +1261,20 @@ local ok, err = pcall(function()
         scheduleProfileSave()
     end)
     table.insert(profileRefresh, function() espHexBox.Text = cfg.ESP_Hex end)
-    makeToggle(espPlayerPage, "ESP Box", "ESP_Box")
-    makeToggle(espPlayerPage, "ESP Name", "ESP_Name")
-    makeToggle(espPlayerPage, "ESP Health", "ESP_Health")
-    makeToggle(espPlayerPage, "ESP Distance", "ESP_Distance")
-    makeToggle(espPlayerPage, "ESP Tracer", "ESP_Tracer")
-    makeToggle(espPlayerPage, "ESP Skeleton", "ESP_Skeleton")
+    makeToggle(espPlayerPage, "Box ESP", "ESP_Box")
+    makeToggle(espPlayerPage, "Name ESP", "ESP_Name")
+    makeToggle(espPlayerPage, "Health ESP", "ESP_Health")
+    makeToggle(espPlayerPage, "Distance ESP", "ESP_Distance")
+    makeToggle(espPlayerPage, "Tracer ESP", "ESP_Tracer")
+    makeToggle(espPlayerPage, "Skeleton ESP", "ESP_Skeleton")
     makeToggle(espPlayerPage, "Team Check", "TeamCheckESP")
     makeToggle(espPlayerPage, "Wall Check", "WallCheckESP")
     
     makeToggle(espCarPage, "Vehicle ESP | Veiculos", "ESP_Vehicles")
     
-    makeToggle(crossPage, "Ativar Crosshair", "Crosshair_On")
-    makeToggle(crossPage, "Modo Ponto ( . )", "Crosshair_Dot")
-    makeToggle(crossPage, "Contorno Preto", "Crosshair_Outline")
+    makeToggle(crossPage, "Custom Crosshair", "Crosshair_On")
+    makeToggle(crossPage, "Center Dot", "Crosshair_Dot")
+    makeToggle(crossPage, "Crosshair Outline", "Crosshair_Outline")
     makeSlider(crossPage, "Grossura", "Crosshair_Thickness", 1, 5, 2, true)
     makeSlider(crossPage, "Tamanho (Pontas)", "Crosshair_Length", 1, 20, 10, true)
     makeSlider(crossPage, "Espaço (Gap)", "Crosshair_Gap", 0, 20, 5, true)
@@ -1139,10 +1298,10 @@ local ok, err = pcall(function()
         end
     end)
     
-    makeToggle(carFisicaPage, "Vehicle Control | Grab", "CarGrabActive")
-    makeSlider(carFisicaPage, "Vehicle Launch | Potencia", "ThrowPower", 0, 10, 5, true)
-    makeSlider(carFisicaPage, "Vehicle Grab | Alcance", "GrabDistance", 45, 150, 75, true)
-    makeToggle(carFisicaPage, "Vehicle Fly | WASD", "CarFly", function(s) toggleCarFly(s) end)
+    makeToggle(carFisicaPage, "Vehicle Grab [Y]", "CarGrabActive")
+    makeSlider(carFisicaPage, "Throw Power [M1]", "ThrowPower", 0, 10, 5, true)
+    makeSlider(carFisicaPage, "Grab Range", "GrabDistance", 45, 150, 75, true)
+    makeToggle(carFisicaPage, "Vehicle Superman [WASD]", "CarFly", function(s) toggleCarFly(s) end)
     
     local vehScroll = Instance.new("ScrollingFrame")
     vehScroll.Size = UDim2.new(1, -10, 0, 200)
@@ -1241,7 +1400,7 @@ local ok, err = pcall(function()
                 b.TextSize = 11
                 b.Text = label
                 b.Parent = row
-                Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
+                Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
                 b.MouseButton1Click:Connect(callback)
             end
             smallButton("IR ATE CARRO", 0, function()
@@ -1297,11 +1456,11 @@ local ok, err = pcall(function()
             savedWalkSpeeds[humanoid] = nil
         end
     end
-    makeToggle(funChatPage, "Speedhack", "SpeedHack", function()
+    makeToggle(funChatPage, "Speed Boost", "SpeedHack", function()
         updateSpeed()
     end)
-    makeSlider(funChatPage, "Movement | Walk Speed", "SpeedValue", 16, 150, 32, true)
-    makeSlider(funChatPage, "Fun | Spin Speed", "SpinSpeed", 1, 90, 15, true)
+    makeSlider(funChatPage, "Boost Speed", "SpeedValue", 16, 150, 32, true)
+    makeSlider(funChatPage, "Spinbot Speed", "SpinSpeed", 1, 90, 15, true)
     safeConnect(LP.CharacterAdded, function(character)
         task.defer(function()
             local humanoid = character:WaitForChild("Humanoid", 8)
@@ -1339,18 +1498,18 @@ local ok, err = pcall(function()
             savedJumps[hum] = nil
         end
     end
-    makeToggle(funChatPage, "Player Fly | Modo Livre", "PlayerFly", function(on)
+    makeToggle(funChatPage, "Superman Mode", "PlayerFly", function(on)
         if not on then stopPlayerFly() end
     end)
-    makeSlider(funChatPage, "Player Fly | Velocidade", "FlySpeed", 10, 200, 55, true)
-    makeToggle(funChatPage, "Noclip (atravessar paredes)", "NoClip", function(on)
+    makeSlider(funChatPage, "Superman Speed", "FlySpeed", 10, 200, 55, true)
+    makeToggle(funChatPage, "Ghost Mode / Noclip", "NoClip", function(on)
         if not on then restoreNoclip() end
     end)
-    makeToggle(funChatPage, "Movement | Infinite Jump", "InfiniteJump")
-    makeToggle(funChatPage, "Pulo Alto", "JumpBoost", function(on)
+    makeToggle(funChatPage, "Infinite Jump", "InfiniteJump")
+    makeToggle(funChatPage, "Super Jump", "JumpBoost", function(on)
         if not on then restoreJump() end
     end)
-    makeSlider(funChatPage, "Altura do Pulo", "JumpValue", 50, 180, 65, true)
+    makeSlider(funChatPage, "Jump Height", "JumpValue", 50, 180, 65, true)
     safeConnect(UIS.JumpRequest, function()
         if isUnloaded or not cfg.InfiniteJump or UIS:GetFocusedTextBox() then return end
         local char = LP.Character
@@ -1413,7 +1572,7 @@ local ok, err = pcall(function()
     local spinToggle = Instance.new("TextButton")
     spinToggle.Size = UDim2.new(1, -10, 0, 26)
     spinToggle.BackgroundColor3 = THEME.off
-    spinToggle.Text = "SPIN (Girar)"
+    spinToggle.Text = "Spinbot [OFF]"
     spinToggle.TextColor3 = THEME.text
     spinToggle.TextSize = 12
     spinToggle.Font = Enum.Font.GothamBold
@@ -1424,7 +1583,7 @@ local ok, err = pcall(function()
     spinToggle.MouseButton1Click:Connect(function()
         isSpinning = not isSpinning
         if isSpinning then
-            spinToggle.Text = "UNSPIN (Parar)"
+            spinToggle.Text = "Spinbot [ON]"
             spinToggle.BackgroundColor3 = THEME.accent
             spinConn = RunService.Heartbeat:Connect(function()
                 local char = LP.Character
@@ -1432,14 +1591,23 @@ local ok, err = pcall(function()
                 if hrp then hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(math.clamp(tonumber(cfg.SpinSpeed) or 15, 1, 90)), 0) end
             end)
         else
-            spinToggle.Text = "SPIN (Girar)"
+            spinToggle.Text = "Spinbot [OFF]"
             spinToggle.BackgroundColor3 = THEME.off
             if spinConn then spinConn:Disconnect(); spinConn = nil end
         end
     end)
     
+    local tpTitle = Instance.new("TextLabel")
+    tpTitle.Size = UDim2.new(1, -16, 0, 34)
+    tpTitle.BackgroundTransparency = 1
+    tpTitle.Text = "➤  PLAYER TELEPORT"
+    tpTitle.TextColor3 = THEME.accent
+    tpTitle.TextSize = 12
+    tpTitle.Font = Enum.Font.GothamBold
+    tpTitle.TextXAlignment = Enum.TextXAlignment.Center
+    tpTitle.Parent = funTpPage
     local tpScroll = Instance.new("ScrollingFrame")
-    tpScroll.Size = UDim2.new(1, -10, 0, 200)
+    tpScroll.Size = UDim2.new(1, -10, 0, 340)
     tpScroll.BackgroundColor3 = THEME.panel
     tpScroll.BorderSizePixel = 0
     tpScroll.ScrollBarThickness = 2
@@ -1584,7 +1752,7 @@ local ok, err = pcall(function()
         b.TextSize = 11
         b.Font = Enum.Font.GothamBold
         b.Parent = r
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 4)
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
         
         b.MouseButton1Click:Connect(function()
             b.Text = "Aperte..."
@@ -1607,9 +1775,9 @@ local ok, err = pcall(function()
         end)
     end
     
-    makeBind(keybindsPage, "Bind Menu", "MenuBind")
-    makeBind(keybindsPage, "Bind Car Grab", "GrabBind")
-    makeBind(keybindsPage, "Bind Car Throw", "ThrowBind")
+    makeBind(keybindsPage, "Menu Hotkey", "MenuBind")
+    makeBind(keybindsPage, "Grab Key [Y]", "GrabBind")
+    makeBind(keybindsPage, "Throw Key [M1]", "ThrowBind")
     
     -- Profiles: import/export e salvamento local (quando o ambiente permite).
     local function profileText(label, height)
@@ -2297,9 +2465,30 @@ local ok, err = pcall(function()
         runAim()
     end)
     
-    print("[cqber] EMBER BLOSSOM carregado com sucesso.")
+    print("[cqber] MYSTIC TURQUESA carregado com sucesso.")
+end, function(e)
+    return debug.traceback(tostring(e), 2)
 end)
 if not ok then
     warn("[cqber ERRO]", err)
     print("[cqber ERRO]", err)
+    pcall(function()
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "CQBER_ErrorDiagnostic"
+        gui.ResetOnSpawn = false
+        gui.DisplayOrder = 999999
+        gui.Parent = game:GetService("CoreGui")
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(0, 560, 0, 160)
+        label.Position = UDim2.new(0.5, -280, 0.15, 0)
+        label.BackgroundColor3 = Color3.fromRGB(30, 20, 20)
+        label.BackgroundTransparency = 0.05
+        label.TextColor3 = Color3.fromRGB(255, 210, 190)
+        label.TextWrapped = true
+        label.TextSize = 14
+        label.Font = Enum.Font.Code
+        label.Text = "CQBER ERRO AO ABRIR\n" .. tostring(err):sub(1, 850)
+        label.Parent = gui
+        Instance.new("UICorner", label).CornerRadius = UDim.new(0, 10)
+    end)
 end
